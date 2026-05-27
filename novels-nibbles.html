@@ -31,6 +31,19 @@
 <style id="github-pages-image-fix">
 /* ── GitHub Pages image fixes (no Squarespace JS) ── */
 
+/* Hero section: needs position for clip-path context */
+.page-section.has-section-divider {
+  position: relative;
+}
+
+/* section-border: must fill the section so clip-path works */
+.section-border {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
 /* Section hero/divider background images */
 .section-background {
   position: absolute;
@@ -1688,7 +1701,7 @@
       id="section-divider-6966d223cbdac634d1d1cea0"
       clipPathUnits="objectBoundingBox"
     >
-      <path class="section-divider-clip" d="M0,0" />
+      <path class="section-divider-clip" d="M0,0 L1,0 L1,0.88 C0.75,1.04 0.25,1.04 0,0.88 Z" />
     </clipPath>
   </svg>
   <svg class="section-divider-svg-stroke" viewBox="0 0 1 1" preserveAspectRatio="none">
