@@ -1339,8 +1339,7 @@
               border-radius: 4px;
               overflow: hidden;
               box-shadow: 0 2px 12px rgba(0,0,0,0.3);
-              /* Tall enough for a full PDF page at any width */
-              aspect-ratio: 8.5 / 11;
+              height: 85vh;
             }
             .pdf-container iframe {
               display: block;
@@ -1348,21 +1347,48 @@
               height: 100%;
               border: none;
             }
+            /* On mobile, show a download button instead of iframe */
+            .pdf-download-btn {
+              display: none;
+            }
             @media (max-width: 767px) {
               .pdf-container {
-                aspect-ratio: unset;
-                height: 80vh;
+                display: none;
+              }
+              .pdf-download-btn {
+                display: block;
+                text-align: center;
+                padding: 20px 0;
+              }
+              .pdf-download-btn a {
+                display: inline-block;
+                padding: 16px 32px;
+                background: #ffffff;
+                color: #253551 !important;
+                text-decoration: none;
+                font-family: inherit;
+                font-size: 1.1em;
+                font-weight: bold;
+                border-radius: 4px;
+                letter-spacing: 0.05em;
+              }
+              .pdf-download-btn p {
+                color: #ffffff;
+                margin-top: 12px;
+                font-size: 0.9em;
+                opacity: 0.7;
               }
             }
           </style>
           <div class="pdf-container">
             <iframe
-              src="https://docs.google.com/viewer?url=https://oddkowens.github.io/Small-Cafe/images/Website+Menu+Catering.pdf&embedded=true"
+              src="images/Website+Menu+Catering.pdf"
               title="Catering Menu PDF">
-              <p style="color:#ffffff;">Your browser doesn't support embedded PDFs.
-                <a href="images/Website+Menu+Catering.pdf" target="_blank" style="color:#ffffff;">Click here to download the catering menu.</a>
-              </p>
             </iframe>
+          </div>
+          <div class="pdf-download-btn">
+            <a href="images/Website+Menu+Catering.pdf" target="_blank">View Catering Menu PDF</a>
+            <p>Opens in your PDF viewer</p>
           </div>
           <p style="text-align:center; margin-top:16px; font-family:inherit; font-size:0.9em; color:#ffffff; opacity:0.7;">
             <a href="images/Website+Menu+Catering.pdf" target="_blank" style="color:#ffffff;">Download PDF</a>
