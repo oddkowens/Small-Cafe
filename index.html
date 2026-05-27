@@ -4983,7 +4983,10 @@ window.onload = function() {
 .header-menu {
   display: flex !important;
   position: fixed;
-  inset: 0;
+  top: var(--burger-menu-offset, 0px);
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 9000;
   overflow-y: auto;
   flex-direction: column;
@@ -4999,29 +5002,6 @@ header.header--menu-open .header-menu {
   transform: translateY(0);
   transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0s;
   pointer-events: auto;
-}
-
-/* ── Keep header visible above the menu overlay ── */
-body header#header.header.header--menu-open {
-  z-index: 9999 !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  display: block !important;
-  pointer-events: none !important;
-  transform: none !important;
-}
-body header#header.header.header--menu-open .header-inner,
-body header#header.header.header--menu-open .header-burger,
-body header#header.header.header--menu-open .header-display-mobile,
-body header#header.header.header--menu-open .header-display-desktop {
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-}
-/* Burger button sits above the menu overlay within the header */
-body header#header.header.header--menu-open .header-burger {
-  position: relative !important;
-  z-index: 9999 !important;
 }
 
 /* ── Burger → X animation (mirrors site.css .burger--active) ── */
@@ -5050,6 +5030,9 @@ body.burger-menu-open {
   var activeBtn = null;
 
   function openMenu(btn) {
+    // Offset the menu overlay so the header bar stays visible above it
+    var headerHeight = header.getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--burger-menu-offset', headerHeight + 'px');
     header.classList.add('header--menu-open');
     document.body.classList.add('burger-menu-open');
     activeBtn = btn;
