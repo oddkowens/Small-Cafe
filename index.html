@@ -5003,20 +5003,29 @@ header.header--menu-open .header-menu {
   pointer-events: auto;
 }
 
-/* Keep the header bar and burger above the menu overlay at all times */
+/* Force the entire header to stay on top of the menu overlay at all times */
+#header,
+.header {
+  z-index: 2147483646 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+}
 .header-inner {
   position: relative;
-  z-index: 9999;
+  z-index: 2147483646 !important;
+  pointer-events: auto !important;
 }
-/* Force the mobile header and burger to stay visible when menu is open */
-header.header--menu-open .header-display-mobile,
-header.header--menu-open .header-display-desktop {
-  position: relative;
-  z-index: 9999;
+.header-display-mobile,
+.header-display-desktop {
+  visibility: visible !important;
+  opacity: 1 !important;
 }
-header.header--menu-open .header-burger {
-  position: relative;
-  z-index: 9999;
+.header-burger {
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 /* ── Burger → X animation — only on the clicked button ── */
