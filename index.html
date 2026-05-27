@@ -4987,14 +4987,12 @@ window.onload = function() {
   z-index: 9000;
   overflow-y: auto;
   flex-direction: column;
-  /* Hidden state */
   opacity: 0;
   visibility: hidden;
   transform: translateY(-12px);
   transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0.25s;
   pointer-events: none;
 }
-/* Open state */
 header.header--menu-open .header-menu {
   opacity: 1;
   visibility: visible;
@@ -5003,73 +5001,23 @@ header.header--menu-open .header-menu {
   pointer-events: auto;
 }
 
-/* Force the entire header to stay on top of the menu overlay at all times */
-#header,
-.header {
-  z-index: 2147483646 !important;
-  pointer-events: auto !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  display: block !important;
+/* ── Burger → X animation (mirrors site.css .burger--active) ── */
+.burger--active .burger-inner .top-bun {
+  transform: translateX(3.5px) rotate(-135deg);
+  width: 28px;
 }
-.header-inner {
-  position: relative;
-  z-index: 2147483646 !important;
-  pointer-events: auto !important;
+.burger--active .burger-inner .patty {
+  transform: scale(0);
 }
-.header-display-mobile,
-.header-display-desktop {
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-.header-burger {
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-}
-
-/* ── Burger → X animation — only on the clicked button ── */
-.burger-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 18px;
-  position: relative;
-}
-.burger-inner {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 24px;
-  height: 18px;
-}
-.top-bun, .patty, .bottom-bun {
-  display: block;
-  width: 100%;
-  height: 2px;
-  background-color: currentColor;
-  border-radius: 2px;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-  transform-origin: center;
-}
-/* Only animate the button that was actually clicked */
-.burger-is-open .top-bun {
-  transform: translateY(8px) rotate(45deg);
-}
-.burger-is-open .patty {
-  opacity: 0;
-  transform: scaleX(0);
-}
-.burger-is-open .bottom-bun {
-  transform: translateY(-8px) rotate(-45deg);
+.burger--active .burger-inner .bottom-bun {
+  transform: translateX(3.5px) rotate(135deg);
+  width: 28px;
 }
 
 /* ── Prevent body scroll when menu open ── */
 body.burger-menu-open {
   overflow: hidden;
 }
-
 </style>
 <script>
 (function() {
@@ -5102,73 +5050,14 @@ body.burger-menu-open {
     }
   }
 
-  // Attach to ALL burger buttons (desktop + mobile)
-  var btns = document.querySelectorAll('[data-test="header-burger"]');
-  btns.forEach(function(btn) {
+  // Attach to all burger buttons
+  document.querySelectorAll('[data-test="header-burger"]').forEach(function(btn) {
     btn.addEventListener('click', toggleMenu);
   });
 
-  // Inject close button into body so it is never clipped by the menu overlay
+  // Close on background click
   var menu = header.querySelector('.header-menu');
-  var closeBtn = document.createElement('button');
-  closeBtn.setAttribute('aria-label', 'Close menu');
-  closeBtn.style.position   = 'fixed';
-  closeBtn.style.zIndex     = '2147483647'; // max possible z-index
-  closeBtn.style.background = 'none';
-  closeBtn.style.border     = 'none';
-  closeBtn.style.cursor     = 'pointer';
-  closeBtn.style.display    = 'none';
-  closeBtn.style.alignItems = 'center';
-  closeBtn.style.justifyContent = 'center';
-  closeBtn.style.top        = '0';
-  closeBtn.style.left       = '0';
-
-  function styleCloseBtn() {
-    // Use the first burger button to get size/position
-    var burger = document.querySelector('[data-test="header-burger"]');
-    if (!burger) return;
-    var r = burger.getBoundingClientRect();
-    closeBtn.style.top    = r.top + 'px';
-    closeBtn.style.left   = r.left + 'px';
-    closeBtn.style.width  = r.width + 'px';
-    closeBtn.style.height = r.height + 'px';
-    // Read the menu overlay text color after it has been applied
-    var menuEl = header.querySelector('.header-menu');
-    if (menuEl) {
-      var col = getComputedStyle(menuEl).color;
-      closeBtn.style.color = col || '#000';
-    }
-  }
-
-  closeBtn.innerHTML = [
-    '<div style="position:relative;width:24px;height:18px">',
-      '<span style="position:absolute;top:50%;left:0;width:100%;height:3px;background:currentColor;border-radius:2px;transform:translateY(-50%) rotate(45deg)"></span>',
-      '<span style="position:absolute;top:50%;left:0;width:100%;height:3px;background:currentColor;border-radius:2px;transform:translateY(-50%) rotate(-45deg)"></span>',
-    '</div>'
-  ].join('');
-  closeBtn.addEventListener('click', closeMenu);
-  document.body.appendChild(closeBtn);
-
-  // Show/hide close button with menu, sized to match burger
-  var origOpen = openMenu;
-  openMenu = function(btn) {
-    origOpen(btn);
-    // Small delay so menu styles have applied before we read color/position
-    setTimeout(styleCloseBtn, 50);
-    closeBtn.style.display = 'flex';
-  };
-  var origClose = closeMenu;
-  closeMenu = function() {
-    origClose();
-    closeBtn.style.display = 'none';
-  };
-  window.addEventListener('resize', function() {
-    if (header.classList.contains('header--menu-open')) styleCloseBtn();
-  });
-
   if (menu) {
-
-    // Close when clicking the background overlay
     menu.addEventListener('click', function(e) {
       if (e.target === menu || e.target.classList.contains('header-menu-bg')) {
         closeMenu();
@@ -5177,15 +5066,24 @@ body.burger-menu-open {
   }
 
   // Close on nav link click
-  var navLinks = header.querySelectorAll('.header-menu-nav-item a');
-  navLinks.forEach(function(link) {
+  header.querySelectorAll('.header-menu-nav-item a').forEach(function(link) {
     link.addEventListener('click', closeMenu);
   });
 
-  // Close on Escape key
+  // Close on Escape
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeMenu();
   });
+
+  // Watch for site.css hiding the header and immediately undo it
+  var observer = new MutationObserver(function() {
+    var s = header.style;
+    if (s.display === 'none')     { s.display = ''; }
+    if (s.visibility === 'hidden'){ s.visibility = ''; }
+    if (s.opacity === '0')        { s.opacity = ''; }
+  });
+  observer.observe(header, { attributes: true, attributeFilter: ['style', 'class'] });
+
 })();
 </script>
 
