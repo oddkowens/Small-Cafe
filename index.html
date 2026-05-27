@@ -4979,34 +4979,74 @@ window.onload = function() {
 
   
 <style id="burger-menu-fix">
-/* Mobile menu overlay - hidden by default, shown when header has --menu-open class */
+/* ── Mobile menu overlay ── */
 .header-menu {
-  display: none !important;
+  display: flex !important;
   position: fixed;
   inset: 0;
   z-index: 9999;
   overflow-y: auto;
   flex-direction: column;
+  /* Hidden state */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-12px);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0.25s;
+  pointer-events: none;
 }
+/* Open state */
 header.header--menu-open .header-menu {
-  display: flex !important;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0s;
+  pointer-events: auto;
 }
-/* Animate burger to X when open */
+
+/* ── Burger → X animation ── */
+.top-bun, .patty, .bottom-bun {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
 header.header--menu-open .top-bun {
   transform: translateY(8px) rotate(45deg);
 }
 header.header--menu-open .patty {
   opacity: 0;
+  transform: scaleX(0);
 }
 header.header--menu-open .bottom-bun {
   transform: translateY(-8px) rotate(-45deg);
 }
-.top-bun, .patty, .bottom-bun {
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-/* Prevent body scroll when menu open */
+
+/* ── Prevent body scroll when menu open ── */
 body.burger-menu-open {
   overflow: hidden;
+}
+
+/* ── Close button ── */
+.burger-menu-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  z-index: 10000;
+  line-height: 1;
+  color: inherit;
+  opacity: 0.7;
+}
+.burger-menu-close-btn:hover {
+  opacity: 1;
+}
+.burger-menu-close-btn svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
 }
 </style>
 <script>
@@ -5014,9 +5054,9 @@ body.burger-menu-open {
   var header = document.getElementById('header');
   if (!header) return;
 
-  function toggleMenu() {
-    var isOpen = header.classList.toggle('header--menu-open');
-    document.body.classList.toggle('burger-menu-open', isOpen);
+  function openMenu() {
+    header.classList.add('header--menu-open');
+    document.body.classList.add('burger-menu-open');
   }
 
   function closeMenu() {
@@ -5024,15 +5064,31 @@ body.burger-menu-open {
     document.body.classList.remove('burger-menu-open');
   }
 
-  // Attach to ALL burger buttons (there are two in the HTML - desktop and mobile)
+  function toggleMenu() {
+    if (header.classList.contains('header--menu-open')) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  }
+
+  // Attach to ALL burger buttons (desktop + mobile)
   var btns = document.querySelectorAll('[data-test="header-burger"]');
   btns.forEach(function(btn) {
     btn.addEventListener('click', toggleMenu);
   });
 
-  // Close when clicking the background overlay
+  // Inject a close button into the menu overlay
   var menu = header.querySelector('.header-menu');
   if (menu) {
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'burger-menu-close-btn';
+    closeBtn.setAttribute('aria-label', 'Close menu');
+    closeBtn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>';
+    closeBtn.addEventListener('click', closeMenu);
+    menu.appendChild(closeBtn);
+
+    // Also close when clicking the background
     menu.addEventListener('click', function(e) {
       if (e.target === menu || e.target.classList.contains('header-menu-bg')) {
         closeMenu();
@@ -5040,10 +5096,15 @@ body.burger-menu-open {
     });
   }
 
-  // Close on nav link click (so menu dismisses after navigation)
+  // Close on nav link click
   var navLinks = header.querySelectorAll('.header-menu-nav-item a');
   navLinks.forEach(function(link) {
     link.addEventListener('click', closeMenu);
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeMenu();
   });
 })();
 </script>
