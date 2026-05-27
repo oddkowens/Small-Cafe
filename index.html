@@ -5103,22 +5103,19 @@ body.burger-menu-open {
   var menu = header.querySelector('.header-menu');
   var closeBtn = document.createElement('button');
   closeBtn.setAttribute('aria-label', 'Close menu');
-  // Use the menu overlay text color so it is always visible
-  closeBtn.style.cssText = [
-    'position:fixed',
-    'top:0',
-    'left:0',
-    'z-index:10001',
-    'background:none',
-    'border:none',
-    'cursor:pointer',
-    'display:none',
-    'align-items:center',
-    'justify-content:center',
-    'color:var(--menuOverlayNavigationLinkColor, #000)'
-  ].join(';');
-  // Match size/position to the mobile burger button
+  closeBtn.style.position   = 'fixed';
+  closeBtn.style.zIndex     = '2147483647'; // max possible z-index
+  closeBtn.style.background = 'none';
+  closeBtn.style.border     = 'none';
+  closeBtn.style.cursor     = 'pointer';
+  closeBtn.style.display    = 'none';
+  closeBtn.style.alignItems = 'center';
+  closeBtn.style.justifyContent = 'center';
+  closeBtn.style.top        = '0';
+  closeBtn.style.left       = '0';
+
   function styleCloseBtn() {
+    // Use the first burger button to get size/position
     var burger = document.querySelector('[data-test="header-burger"]');
     if (!burger) return;
     var r = burger.getBoundingClientRect();
@@ -5126,7 +5123,14 @@ body.burger-menu-open {
     closeBtn.style.left   = r.left + 'px';
     closeBtn.style.width  = r.width + 'px';
     closeBtn.style.height = r.height + 'px';
+    // Read the menu overlay text color after it has been applied
+    var menuEl = header.querySelector('.header-menu');
+    if (menuEl) {
+      var col = getComputedStyle(menuEl).color;
+      closeBtn.style.color = col || '#000';
+    }
   }
+
   closeBtn.innerHTML = [
     '<div style="position:relative;width:24px;height:18px">',
       '<span style="position:absolute;top:50%;left:0;width:100%;height:3px;background:currentColor;border-radius:2px;transform:translateY(-50%) rotate(45deg)"></span>',
@@ -5140,7 +5144,8 @@ body.burger-menu-open {
   var origOpen = openMenu;
   openMenu = function(btn) {
     origOpen(btn);
-    styleCloseBtn();
+    // Small delay so menu styles have applied before we read color/position
+    setTimeout(styleCloseBtn, 50);
     closeBtn.style.display = 'flex';
   };
   var origClose = closeMenu;
