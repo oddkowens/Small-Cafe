@@ -5073,14 +5073,14 @@ body.burger-menu-open {
     header.classList.add('header--menu-open');
     document.body.classList.add('burger-menu-open');
     activeBtn = btn;
-    btn.classList.add('burger-is-open');
+    btn.classList.add('burger--active');
   }
 
   function closeMenu() {
     header.classList.remove('header--menu-open');
     document.body.classList.remove('burger-menu-open');
     if (activeBtn) {
-      activeBtn.classList.remove('burger-is-open');
+      activeBtn.classList.remove('burger--active');
       activeBtn = null;
     }
   }
@@ -5104,29 +5104,48 @@ body.burger-menu-open {
   if (menu) {
     var closeBtn = document.createElement('button');
     closeBtn.setAttribute('aria-label', 'Close menu');
-    closeBtn.style.cssText = [
-      'position:fixed',
-      'top:0',
-      'left:0',
-      'z-index:10000',
-      'background:none',
-      'border:none',
-      'cursor:pointer',
-      'padding:16px',
-      'color:inherit',
-      'display:flex',
-      'align-items:center',
-      'justify-content:center'
-    ].join(';');
-    // Build an X using two lines (same look as the burger)
+    // Mirror the exact size, position and color of the real burger button
+    function styleCloseBtn() {
+      var burger = document.querySelector('[data-test="header-burger"]');
+      if (!burger) return;
+      var r = burger.getBoundingClientRect();
+      var cs = getComputedStyle(burger);
+      closeBtn.style.cssText = [
+        'position:fixed',
+        'top:' + r.top + 'px',
+        'left:' + r.left + 'px',
+        'width:' + r.width + 'px',
+        'height:' + r.height + 'px',
+        'z-index:10000',
+        'background:none',
+        'border:none',
+        'cursor:pointer',
+        'padding:' + cs.padding,
+        'color:' + cs.color,
+        'display:flex',
+        'align-items:center',
+        'justify-content:center',
+        'box-sizing:border-box'
+      ].join(';');
+    }
+    // Build an X using two lines matching the burger line style
     closeBtn.innerHTML = [
       '<div style="position:relative;width:24px;height:18px">',
-        '<span style="position:absolute;top:50%;left:0;width:100%;height:2px;background:currentColor;border-radius:2px;transform:rotate(45deg)"></span>',
-        '<span style="position:absolute;top:50%;left:0;width:100%;height:2px;background:currentColor;border-radius:2px;transform:rotate(-45deg)"></span>',
+        '<span style="position:absolute;top:50%;left:0;width:100%;height:3px;background:currentColor;border-radius:2px;transform:translateY(-50%) rotate(45deg)"></span>',
+        '<span style="position:absolute;top:50%;left:0;width:100%;height:3px;background:currentColor;border-radius:2px;transform:translateY(-50%) rotate(-45deg)"></span>',
       '</div>'
     ].join('');
     closeBtn.addEventListener('click', closeMenu);
     menu.appendChild(closeBtn);
+    // Style on open (position may have changed on scroll/resize)
+    var origOpen = openMenu;
+    openMenu = function(btn) {
+      origOpen(btn);
+      styleCloseBtn();
+    };
+    window.addEventListener('resize', function() {
+      if (header.classList.contains('header--menu-open')) styleCloseBtn();
+    });
 
     // Close when clicking the background overlay
     menu.addEventListener('click', function(e) {
