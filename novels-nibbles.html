@@ -31,17 +31,21 @@
 <style id="github-pages-image-fix">
 /* ── GitHub Pages image fixes (no Squarespace JS) ── */
 
-/* Hero section: needs position for clip-path context */
-.page-section.has-section-divider {
+/* Hero section: teal shows through the rounded corners */
+[data-section-id="6966d223cbdac634d1d1cea0"] {
   position: relative;
+  background-color: #2597CC;
 }
 
-/* section-border: must fill the section so clip-path works */
+/* section-border: fills the section and clips the hero image with rounded bottom */
 .section-border {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  border-bottom-left-radius: 50% 6vw;
+  border-bottom-right-radius: 50% 6vw;
+  overflow: hidden;
 }
 
 /* Section hero/divider background images */
@@ -1549,7 +1553,7 @@
     class="section-border"
     
       data-controller="SectionDivider"
-      style="clip-path: url(#section-divider-6966d223cbdac634d1d1cea0);"
+      style=""
     
   >
     <div class="section-background">
