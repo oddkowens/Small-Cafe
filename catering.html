@@ -1333,12 +1333,31 @@
       <main id="page" class="container" role="main" style="background-color:#253551; min-height:100vh;">
         <div style="padding: 100px 20px 40px; max-width: 900px; margin: 0 auto;">
           <h1 style="font-family: inherit; text-align: center; margin-bottom: 24px; color: #ffffff;">Catering Menu</h1>
-          <div style="width:100%; border-radius:4px; overflow:hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.3);">
+          <style>
+            .pdf-container {
+              width: 100%;
+              border-radius: 4px;
+              overflow: hidden;
+              box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+              /* Tall enough for a full PDF page at any width */
+              aspect-ratio: 8.5 / 11;
+            }
+            .pdf-container iframe {
+              display: block;
+              width: 100%;
+              height: 100%;
+              border: none;
+            }
+            @media (max-width: 767px) {
+              .pdf-container {
+                aspect-ratio: unset;
+                height: 80vh;
+              }
+            }
+          </style>
+          <div class="pdf-container">
             <iframe
-              src="images/Website+Menu+Catering.pdf"
-              width="100%"
-              height="900px"
-              style="display:block; border:none;"
+              src="https://docs.google.com/viewer?url=https://oddkowens.github.io/Small-Cafe/images/Website+Menu+Catering.pdf&embedded=true"
               title="Catering Menu PDF">
               <p style="color:#ffffff;">Your browser doesn't support embedded PDFs.
                 <a href="images/Website+Menu+Catering.pdf" target="_blank" style="color:#ffffff;">Click here to download the catering menu.</a>
