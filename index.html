@@ -5003,7 +5003,7 @@ header.header--menu-open .header-menu {
   pointer-events: auto;
 }
 
-/* ── Burger → X animation ── */
+/* ── Burger → X animation — only on the active button ── */
 .burger-box {
   display: flex;
   align-items: center;
@@ -5028,14 +5028,15 @@ header.header--menu-open .header-menu {
   transition: transform 0.3s ease, opacity 0.3s ease;
   transform-origin: center;
 }
-header.header--menu-open .top-bun {
+/* Only animate the button that was actually clicked */
+.burger-is-open .top-bun {
   transform: translateY(8px) rotate(45deg);
 }
-header.header--menu-open .patty {
+.burger-is-open .patty {
   opacity: 0;
   transform: scaleX(0);
 }
-header.header--menu-open .bottom-bun {
+.burger-is-open .bottom-bun {
   transform: translateY(-8px) rotate(-45deg);
 }
 
@@ -5075,21 +5076,29 @@ body.burger-menu-open {
   var header = document.getElementById('header');
   if (!header) return;
 
-  function openMenu() {
+  var activeBtn = null;
+
+  function openMenu(btn) {
     header.classList.add('header--menu-open');
     document.body.classList.add('burger-menu-open');
+    activeBtn = btn;
+    btn.classList.add('burger-is-open');
   }
 
   function closeMenu() {
     header.classList.remove('header--menu-open');
     document.body.classList.remove('burger-menu-open');
+    if (activeBtn) {
+      activeBtn.classList.remove('burger-is-open');
+      activeBtn = null;
+    }
   }
 
-  function toggleMenu() {
+  function toggleMenu(e) {
     if (header.classList.contains('header--menu-open')) {
       closeMenu();
     } else {
-      openMenu();
+      openMenu(e.currentTarget);
     }
   }
 
