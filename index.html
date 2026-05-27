@@ -4982,7 +4982,7 @@ window.onload = function() {
 <style id="burger-menu-fix">
 /* Mobile menu overlay - hidden by default, shown when header has --menu-open class */
 .header-menu {
-  display: none;
+  display: none !important;
   position: fixed;
   inset: 0;
   z-index: 9999;
@@ -4990,7 +4990,7 @@ window.onload = function() {
   flex-direction: column;
 }
 header.header--menu-open .header-menu {
-  display: flex;
+  display: flex !important;
 }
 /* Animate burger to X when open */
 header.header--menu-open .top-bun {
@@ -5012,23 +5012,40 @@ body.burger-menu-open {
 </style>
 <script>
 (function() {
-  var btn = document.querySelector('[data-test="header-burger"]');
   var header = document.getElementById('header');
-  if (!btn || !header) return;
-  btn.addEventListener('click', function() {
+  if (!header) return;
+
+  function toggleMenu() {
     var isOpen = header.classList.toggle('header--menu-open');
     document.body.classList.toggle('burger-menu-open', isOpen);
+  }
+
+  function closeMenu() {
+    header.classList.remove('header--menu-open');
+    document.body.classList.remove('burger-menu-open');
+  }
+
+  // Attach to ALL burger buttons (there are two in the HTML - desktop and mobile)
+  var btns = document.querySelectorAll('[data-test="header-burger"]');
+  btns.forEach(function(btn) {
+    btn.addEventListener('click', toggleMenu);
   });
-  // Close on click outside menu content
+
+  // Close when clicking the background overlay
   var menu = header.querySelector('.header-menu');
   if (menu) {
     menu.addEventListener('click', function(e) {
       if (e.target === menu || e.target.classList.contains('header-menu-bg')) {
-        header.classList.remove('header--menu-open');
-        document.body.classList.remove('burger-menu-open');
+        closeMenu();
       }
     });
   }
+
+  // Close on nav link click (so menu dismisses after navigation)
+  var navLinks = header.querySelectorAll('.header-menu-nav-item a');
+  navLinks.forEach(function(link) {
+    link.addEventListener('click', closeMenu);
+  });
 })();
 </script>
 
