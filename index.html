@@ -5099,53 +5099,60 @@ body.burger-menu-open {
     btn.addEventListener('click', toggleMenu);
   });
 
-  // Inject a close button (X) into the top-left of the menu overlay itself
+  // Inject close button into body so it is never clipped by the menu overlay
   var menu = header.querySelector('.header-menu');
+  var closeBtn = document.createElement('button');
+  closeBtn.setAttribute('aria-label', 'Close menu');
+  // Use the menu overlay text color so it is always visible
+  closeBtn.style.cssText = [
+    'position:fixed',
+    'top:0',
+    'left:0',
+    'z-index:10001',
+    'background:none',
+    'border:none',
+    'cursor:pointer',
+    'display:none',
+    'align-items:center',
+    'justify-content:center',
+    'color:var(--menuOverlayNavigationLinkColor, #000)'
+  ].join(';');
+  // Match size/position to the mobile burger button
+  function styleCloseBtn() {
+    var burger = document.querySelector('[data-test="header-burger"]');
+    if (!burger) return;
+    var r = burger.getBoundingClientRect();
+    closeBtn.style.top    = r.top + 'px';
+    closeBtn.style.left   = r.left + 'px';
+    closeBtn.style.width  = r.width + 'px';
+    closeBtn.style.height = r.height + 'px';
+  }
+  closeBtn.innerHTML = [
+    '<div style="position:relative;width:24px;height:18px">',
+      '<span style="position:absolute;top:50%;left:0;width:100%;height:3px;background:currentColor;border-radius:2px;transform:translateY(-50%) rotate(45deg)"></span>',
+      '<span style="position:absolute;top:50%;left:0;width:100%;height:3px;background:currentColor;border-radius:2px;transform:translateY(-50%) rotate(-45deg)"></span>',
+    '</div>'
+  ].join('');
+  closeBtn.addEventListener('click', closeMenu);
+  document.body.appendChild(closeBtn);
+
+  // Show/hide close button with menu, sized to match burger
+  var origOpen = openMenu;
+  openMenu = function(btn) {
+    origOpen(btn);
+    styleCloseBtn();
+    closeBtn.style.display = 'flex';
+  };
+  var origClose = closeMenu;
+  closeMenu = function() {
+    origClose();
+    closeBtn.style.display = 'none';
+  };
+  window.addEventListener('resize', function() {
+    if (header.classList.contains('header--menu-open')) styleCloseBtn();
+  });
+
   if (menu) {
-    var closeBtn = document.createElement('button');
-    closeBtn.setAttribute('aria-label', 'Close menu');
-    // Mirror the exact size, position and color of the real burger button
-    function styleCloseBtn() {
-      var burger = document.querySelector('[data-test="header-burger"]');
-      if (!burger) return;
-      var r = burger.getBoundingClientRect();
-      var cs = getComputedStyle(burger);
-      closeBtn.style.cssText = [
-        'position:fixed',
-        'top:' + r.top + 'px',
-        'left:' + r.left + 'px',
-        'width:' + r.width + 'px',
-        'height:' + r.height + 'px',
-        'z-index:10000',
-        'background:none',
-        'border:none',
-        'cursor:pointer',
-        'padding:' + cs.padding,
-        'color:' + cs.color,
-        'display:flex',
-        'align-items:center',
-        'justify-content:center',
-        'box-sizing:border-box'
-      ].join(';');
-    }
-    // Build an X using two lines matching the burger line style
-    closeBtn.innerHTML = [
-      '<div style="position:relative;width:24px;height:18px">',
-        '<span style="position:absolute;top:50%;left:0;width:100%;height:3px;background:currentColor;border-radius:2px;transform:translateY(-50%) rotate(45deg)"></span>',
-        '<span style="position:absolute;top:50%;left:0;width:100%;height:3px;background:currentColor;border-radius:2px;transform:translateY(-50%) rotate(-45deg)"></span>',
-      '</div>'
-    ].join('');
-    closeBtn.addEventListener('click', closeMenu);
-    menu.appendChild(closeBtn);
-    // Style on open (position may have changed on scroll/resize)
-    var origOpen = openMenu;
-    openMenu = function(btn) {
-      origOpen(btn);
-      styleCloseBtn();
-    };
-    window.addEventListener('resize', function() {
-      if (header.classList.contains('header--menu-open')) styleCloseBtn();
-    });
 
     // Close when clicking the background overlay
     menu.addEventListener('click', function(e) {
