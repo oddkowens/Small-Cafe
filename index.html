@@ -4984,7 +4984,7 @@ window.onload = function() {
   display: flex !important;
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: 9000;
   overflow-y: auto;
   flex-direction: column;
   /* Hidden state */
@@ -5003,7 +5003,13 @@ header.header--menu-open .header-menu {
   pointer-events: auto;
 }
 
-/* ── Burger → X animation — only on the active button ── */
+/* Keep header bar above the menu so burger stays clickable */
+.header-inner {
+  position: relative;
+  z-index: 9999;
+}
+
+/* ── Burger → X animation — only on the clicked button ── */
 .burger-box {
   display: flex;
   align-items: center;
@@ -5045,31 +5051,6 @@ body.burger-menu-open {
   overflow: hidden;
 }
 
-/* ── Close button ── */
-.burger-menu-close-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  z-index: 10000;
-  line-height: 1;
-  color: inherit;
-  opacity: 0.7;
-}
-.burger-menu-close-btn:hover {
-  opacity: 1;
-}
-.burger-menu-close-btn svg {
-  display: block;
-  width: 24px;
-  height: 24px;
-  stroke: currentColor;
-  stroke-width: 2;
-  fill: none;
-}
 </style>
 <script>
 (function() {
@@ -5108,17 +5089,9 @@ body.burger-menu-open {
     btn.addEventListener('click', toggleMenu);
   });
 
-  // Inject a close button into the menu overlay
+  // Close when clicking the background overlay
   var menu = header.querySelector('.header-menu');
   if (menu) {
-    var closeBtn = document.createElement('button');
-    closeBtn.className = 'burger-menu-close-btn';
-    closeBtn.setAttribute('aria-label', 'Close menu');
-    closeBtn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>';
-    closeBtn.addEventListener('click', closeMenu);
-    menu.appendChild(closeBtn);
-
-    // Also close when clicking the background
     menu.addEventListener('click', function(e) {
       if (e.target === menu || e.target.classList.contains('header-menu-bg')) {
         closeMenu();
