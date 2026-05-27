@@ -5003,8 +5003,18 @@ header.header--menu-open .header-menu {
   pointer-events: auto;
 }
 
-/* Keep header bar above the menu so burger stays clickable */
+/* Keep the header bar and burger above the menu overlay at all times */
 .header-inner {
+  position: relative;
+  z-index: 9999;
+}
+/* Force the mobile header and burger to stay visible when menu is open */
+header.header--menu-open .header-display-mobile,
+header.header--menu-open .header-display-desktop {
+  position: relative;
+  z-index: 9999;
+}
+header.header--menu-open .header-burger {
   position: relative;
   z-index: 9999;
 }
@@ -5089,9 +5099,36 @@ body.burger-menu-open {
     btn.addEventListener('click', toggleMenu);
   });
 
-  // Close when clicking the background overlay
+  // Inject a close button (X) into the top-left of the menu overlay itself
   var menu = header.querySelector('.header-menu');
   if (menu) {
+    var closeBtn = document.createElement('button');
+    closeBtn.setAttribute('aria-label', 'Close menu');
+    closeBtn.style.cssText = [
+      'position:fixed',
+      'top:0',
+      'left:0',
+      'z-index:10000',
+      'background:none',
+      'border:none',
+      'cursor:pointer',
+      'padding:16px',
+      'color:inherit',
+      'display:flex',
+      'align-items:center',
+      'justify-content:center'
+    ].join(';');
+    // Build an X using two lines (same look as the burger)
+    closeBtn.innerHTML = [
+      '<div style="position:relative;width:24px;height:18px">',
+        '<span style="position:absolute;top:50%;left:0;width:100%;height:2px;background:currentColor;border-radius:2px;transform:rotate(45deg)"></span>',
+        '<span style="position:absolute;top:50%;left:0;width:100%;height:2px;background:currentColor;border-radius:2px;transform:rotate(-45deg)"></span>',
+      '</div>'
+    ].join('');
+    closeBtn.addEventListener('click', closeMenu);
+    menu.appendChild(closeBtn);
+
+    // Close when clicking the background overlay
     menu.addEventListener('click', function(e) {
       if (e.target === menu || e.target.classList.contains('header-menu-bg')) {
         closeMenu();
