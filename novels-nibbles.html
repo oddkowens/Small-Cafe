@@ -31,6 +31,38 @@
 <style id="github-pages-image-fix">
 /* ── GitHub Pages image fixes (no Squarespace JS) ── */
 
+/* ── Header: desktop vs mobile display ── */
+.header-display-desktop { display: block; }
+.header-display-mobile  { display: none; }
+
+@media screen and (max-width: 799px) {
+  .header-display-desktop { display: none; }
+  .header-display-mobile  { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+}
+
+/* Logo sizing */
+.header-title-logo img,
+.header-title-logo picture {
+  max-height: 65px;
+  width: auto;
+  display: block;
+}
+.header-mobile-logo img,
+.header-mobile-logo picture {
+  max-height: 75px;
+  width: auto;
+  display: block;
+}
+
+/* Show correct logo per context */
+.header-title--use-mobile-logo .header-title-logo { display: none; }
+.header-title--use-mobile-logo .header-mobile-logo { display: block; }
+
+@media screen and (min-width: 800px) {
+  .header-title--use-mobile-logo .header-title-logo { display: block; }
+  .header-title--use-mobile-logo .header-mobile-logo { display: none; }
+}
+
 /* Hero section: teal shows through the rounded corners */
 [data-section-id="6966d223cbdac634d1d1cea0"] {
   position: relative;
@@ -749,10 +781,36 @@
 
 
 <style>
-  .top-bun, 
-  .patty, 
+  .header-burger-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .burger-box {
+    width: 24px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .burger-inner {
+    width: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .top-bun,
+  .patty,
   .bottom-bun {
     height: 3px;
+    width: 100%;
+    background-color: currentColor;
+    display: block;
+    border-radius: 1px;
   }
 </style>
 
@@ -793,10 +851,36 @@
 
 
 <style>
-  .top-bun, 
-  .patty, 
+  .header-burger-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .burger-box {
+    width: 24px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .burger-inner {
+    width: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .top-bun,
+  .patty,
   .bottom-bun {
     height: 3px;
+    width: 100%;
+    background-color: currentColor;
+    display: block;
+    border-radius: 1px;
   }
 </style>
 
