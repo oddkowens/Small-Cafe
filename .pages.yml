@@ -1,10 +1,20 @@
 # Pages CMS (https://app.pagescms.org) — the editor Ellen and Kyle use for the
 # weekly Novels & Nibbles special. Saving commits to GitHub; the "Build
 # specials" GitHub Action then updates the pages and Cloudflare deploys them.
+# The "Make video" button on an entry runs the "Render special video" Action.
 media:
-  input: images/specials
-  output: /images/specials
-  extensions: [jpg, jpeg, png, webp]
+  - name: photos
+    label: Website photos
+    input: images/specials
+    output: /images/specials
+    extensions: [jpg, jpeg, png, webp]
+  # Video-only uploads (covers, stickers, audio) live under _video/, which the
+  # website doesn't publish.
+  - name: video
+    label: Video uploads
+    input: _video/uploads
+    output: /_video/uploads
+    extensions: [jpg, jpeg, png, webp, mp3, m4a, wav, aac]
 
 content:
   - name: specials
@@ -13,7 +23,8 @@ content:
       Add one entry per week. The special with the latest first day becomes the
       "Current Special" (Novels & Nibbles page, the menu page and the homepage
       photo) about two minutes after saving; older ones move to "Previous
-      Special" automatically.
+      Special" automatically. Fill in the Video section and press "Make video"
+      for the weekly clip.
     type: collection
     path: specials
     format: json
@@ -25,6 +36,15 @@ content:
       default:
         sort: start
         order: desc
+    actions:
+      - name: make-video
+        label: Make video
+        workflow: render-video.yml
+        scope: entry
+        confirm:
+          title: Make the weekly video?
+          message: Save your changes first. The video takes about 3 minutes; the download link then appears in the "Video" field (reload the entry).
+          button: Make video
     fields:
       - name: title
         label: Book & author
@@ -46,7 +66,7 @@ content:
         type: string
       - name: photo
         label: Photo
-        description: Used on the Novels & Nibbles page and as the homepage background.
+        description: Used on the Novels & Nibbles page, as the homepage background, and in the video.
         type: image
         required: true
       - name: hero_focus
@@ -62,3 +82,39 @@ content:
         type: rich-text
         options:
           format: html
+
+      # ── Video ──
+      - name: cover
+        label: "Video: book cover"
+        description: The book cover image. Shown first in the video.
+        type: image
+        options:
+          media: video
+      - name: video_summary
+        label: "Video: book page text"
+        description: The short blurb on the open book (about 2–4 sentences). Leave empty to use the start of the description.
+        type: text
+      - name: audio
+        label: "Video: audio"
+        description: The music or voiceover (mp3, m4a or wav). The video is as long as the audio (12–60 seconds); without audio it's 20 seconds and silent.
+        type: file
+        options:
+          media: video
+      - name: theme
+        label: "Video: decorations"
+        description: Animated decorations over the cover and dish.
+        type: select
+        default: sparkles
+        options:
+          values: [sparkles, confetti, question-marks, hearts, sun, waves, stars, none]
+      - name: sticker
+        label: "Video: sticker (optional)"
+        description: A themed picture that bounces next to the cover and dish, e.g. an apple or a magnifying glass. A PNG with a transparent background works best.
+        type: image
+        options:
+          media: video
+      - name: video
+        label: Video
+        description: Download link for the finished video — filled in by "Make video".
+        type: string
+        readonly: true

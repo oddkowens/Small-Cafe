@@ -32,6 +32,25 @@ then runs `_build/build_specials.py`, which:
 It commits the updated pages and Cloudflare deploys them — about two minutes
 after saving. The special with the latest first day is always the current one.
 
+### Weekly video
+
+The special's entry also has a **Video** section: book cover, book-page text,
+audio (mp3/m4a/wav), decorations and an optional sticker. Save, then press
+**Make video** (top of the entry). The **Render special video** Action
+(`.github/workflows/render-video.yml`) renders a 1080×1080 MP4 with
+`_video/render.mjs` (Remotion), attaches it to a GitHub release and writes the
+download link into the entry's **Video** field (~3 minutes; reload the entry).
+
+The template is `_video/src/` — `SpecialClip.tsx` (scenes and timing: cover,
+dish, page curl at the halfway point, open book), `PageFlip.tsx`, and
+`themes.tsx` (the decoration sets). Brand artwork is in `_video/public/brand/`.
+Uploads for the video go to `_video/uploads/`, which the website doesn't publish.
+
+To work on the template locally: `cd _video && npm install && npm run studio`
+(live preview), or render one special with
+`node render.mjs ../specials/<file>.json` (→ `_video/out/`). Remotion is free
+for companies of up to 3 people (ODD qualifies).
+
 ### Practising
 
 Use the **practice** branch: in Pages CMS switch the branch (top left) from

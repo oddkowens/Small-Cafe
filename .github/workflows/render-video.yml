@@ -1,0 +1,105 @@
+# Renders the weekly Novels & Nibbles clip for one special. Started by the
+# "Make video" button in Pages CMS (which sends a JSON `payload` naming the
+# entry), or by hand from the Actions tab with the special's file path.
+#
+# The MP4 is attached to a GitHub release (so it doesn't bloat the repo) and
+# its download link is written into the special's "video" field.
+name: Render special video
+
+on:
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: "Sent by Pages CMS"
+        required: false
+        default: ""
+      special:
+        description: "…or a special's path, e.g. specials/2026-09-23-brady-bunch-book-by-andy-edelstein-frank-lovece.json"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: render-video-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Work out which special
+        id: which
+        env:
+          PAYLOAD: ${{ inputs.payload }}
+          SPECIAL: ${{ inputs.special }}
+        run: |
+          path="$SPECIAL"
+          if [ -z "$path" ] && [ -n "$PAYLOAD" ]; then
+            path=$(printf '%s' "$PAYLOAD" | jq -r '.context.path // empty')
+          fi
+          if [ -z "$path" ] || [ ! -f "$path" ]; then
+            echo "::error::No special to render (got '$path'). Save the entry, then press Make video on it."
+            exit 1
+          fi
+          slug=$(basename "$path" .json)
+          branch="${GITHUB_REF_NAME}"
+          # Practice renders get their own release so they never replace the real one.
+          if [ "$branch" = "main" ]; then tag="video-$slug"; else tag="video-$branch-$slug"; fi
+          echo "path=$path" >> "$GITHUB_OUTPUT"
+          echo "slug=$slug" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "title=$(jq -r .title "$path")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: _video/package-lock.json
+
+      - name: Install
+        working-directory: _video
+        run: npm ci --no-audit --no-fund
+
+      - name: Render
+        working-directory: _video
+        run: node render.mjs "../${{ steps.which.outputs.path }}" "out/${{ steps.which.outputs.slug }}.mp4"
+
+      - name: Publish the video
+        id: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.which.outputs.tag }}
+          TITLE: ${{ steps.which.outputs.title }}
+          FILE: _video/out/${{ steps.which.outputs.slug }}.mp4
+        run: |
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --title "Video: $TITLE" --notes "Novels & Nibbles clip, rendered from the special's entry." --target "$GITHUB_SHA"
+          fi
+          gh release upload "$TAG" "$FILE" --clobber
+          url="https://github.com/${GITHUB_REPOSITORY}/releases/download/$TAG/$(basename "$FILE")"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "### 🎬 [Download the video]($url)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Save the link in the special
+        env:
+          FILE: ${{ steps.which.outputs.path }}
+          URL: ${{ steps.publish.outputs.url }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          for attempt in 1 2 3; do
+            git pull --rebase --quiet origin "$GITHUB_REF_NAME"
+            # Cache-buster so a re-render isn't hidden by a cached download.
+            jq --arg url "$URL?v=$(date +%s)" '.video = $url' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
+            git add "$FILE"
+            git diff --cached --quiet && exit 0
+            git commit -m "Video link for $(basename "$FILE" .json)"
+            git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
+            git reset --hard --quiet "origin/$GITHUB_REF_NAME"
+          done
+          exit 1
