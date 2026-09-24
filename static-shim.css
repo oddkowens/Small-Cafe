@@ -1,0 +1,136 @@
+/* Stand-ins for Squarespace components whose layout came from Squarespace's
+   JavaScript. Loaded after the saved Squarespace CSS; paired with static-shim.js. */
+
+/* ── Gallery reel (horizontal slideshow) → scroll-snap strip ── */
+.gallery-reel-list {
+  position: relative !important;
+  display: flex;
+  gap: 10px;
+  height: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.gallery-reel-list::-webkit-scrollbar { display: none; }
+.gallery-reel-item {
+  position: relative !important;
+  flex: 0 0 auto;
+  width: auto !important;
+  height: 100% !important;
+  transform: none !important;
+  scroll-snap-align: center;
+}
+.gallery-reel-item-wrapper,
+.gallery-reel-item-src {
+  position: relative !important;
+  display: block !important;
+  width: auto !important;
+  height: 100% !important;
+  opacity: 1 !important;
+  z-index: auto !important; /* Squarespace uses -1, which drops it behind the section */
+}
+.gallery-reel-item img {
+  position: static !important;
+  width: auto !important;
+  height: 100% !important;
+  max-width: 90vw;
+  object-fit: cover;
+}
+.gallery-reel-controls { pointer-events: none; }
+.gallery-reel-control-btn { pointer-events: auto; cursor: pointer; }
+
+/* ── Masonry gallery → CSS columns ── */
+.gallery-masonry-wrapper {
+  display: block !important;
+  height: auto !important;
+  column-count: var(--shim-cols, 3);
+  column-gap: var(--shim-gutter, 20px);
+}
+.gallery-masonry-item {
+  position: static !important;
+  display: block;
+  width: auto !important;
+  margin: 0 0 var(--shim-gutter, 20px) !important;
+  transform: none !important;
+  opacity: 1 !important;
+  break-inside: avoid;
+}
+.gallery-masonry-item img {
+  position: static !important;
+  width: 100% !important;
+  height: auto !important;
+}
+@media (max-width: 767px) {
+  .gallery-masonry-wrapper { column-count: 2; column-gap: 12px; }
+  .gallery-masonry-item { margin-bottom: 12px !important; }
+}
+
+/* ── List section "banner slideshow" → cross-fading slides ── */
+.user-items-list-banner-slideshow .slides {
+  position: relative;
+  opacity: 1 !important;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.user-items-list-banner-slideshow .slide {
+  position: absolute !important;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: none !important; /* Squarespace parks inactive slides at -9999px */
+  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+}
+.user-items-list-banner-slideshow .slide.shim-active {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease;
+}
+.user-items-list-banner-slideshow .slide-media-container {
+  position: absolute;
+  inset: 0;
+}
+.user-items-list-banner-slideshow .slide-media-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.user-items-list-banner-slideshow button { cursor: pointer; }
+
+/* ── Simple lightbox for gallery images ── */
+.shim-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+  cursor: zoom-out;
+}
+.shim-lightbox img {
+  max-width: 92vw;
+  max-height: 92vh;
+  object-fit: contain;
+}
+
+/* ── Scroll-in animations ── Squarespace starts these elements hidden and
+   reveals them from JS; with the JS gone they would stay invisible. */
+[data-animation-role],
+.gallery-masonry-item-wrapper,
+.gallery-grid-item-wrapper {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* ── Image blocks set to "fit" ── Squarespace's JS sized this wrapper to the
+   image's aspect ratio; without it the wrapper is 0×0. Fill the block and let
+   the image contain itself instead. */
+.js-content-mode-element.content-fit {
+  position: absolute;
+  inset: 0;
+}
+.js-content-mode-element.content-fit img {
+  object-fit: contain !important;
+}

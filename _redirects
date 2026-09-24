@@ -1,0 +1,10 @@
+# Old Squarespace URLs that aren't part of the static site
+/cart             /                            301
+/catering         /s/Website-Menu-Catering.pdf 302
+/home             /                            301
+/home-1-1-1       /                            301
+/menu-1           /menu                        301
+/weekly-special   /novels-nibbles              301
+/location         /                            301
+/our-team         /                            301
+/careers          /                            301
