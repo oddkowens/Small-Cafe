@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Regenerate the Novels & Nibbles special everywhere it appears.
 
-    python3 _build/build_specials.py            # rebuild pages from specials/*.json
-    python3 _build/build_specials.py --today 2026-09-23   # pretend it's another day
+    python3 _build/build_specials.py
 
 Each special is one JSON file in specials/ (edited through Pages CMS, see
-.pages.yml). The newest special whose start date has arrived is the current
-one; everything older is listed under "Previous Special". Specials dated in
-the future stay hidden until their start date (a daily GitHub Action rebuilds).
+.pages.yml). The special with the latest first day is the current one — live
+as soon as it's saved, which is how the café works (specials arrive Tuesday
+and go up that night for a Wednesday start). Everything older is listed
+under "Previous Special".
 
 Updates, between marker comments:
   novels-nibbles.html  current special section + all previous special sections
@@ -20,7 +20,7 @@ GitHub Action installs it). Without Pillow the photo is used as uploaded.
 
 Python standard library only (plus optional Pillow).
 """
-import datetime, hashlib, html, json, os, re, struct, sys, zoneinfo
+import datetime, hashlib, html, json, os, re, struct, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SPECIALS = os.path.join(ROOT, "specials")
@@ -211,17 +211,12 @@ def hero_img(tag, p, focus):
 
 
 def main():
-    today = datetime.datetime.now(zoneinfo.ZoneInfo("America/New_York")).date().isoformat()
-    if "--today" in sys.argv:
-        today = sys.argv[sys.argv.index("--today") + 1]
-
     specials = load_specials()
+    if not specials:
+        sys.exit("no specials in specials/")
     for s in specials:
         optimize_photo(s)
-    live = [s for s in specials if s["start"] <= today]
-    if not live:
-        sys.exit("no special has started yet")
-    current, previous = live[0], live[1:]
+    current, previous = specials[0], specials[1:]
 
     with open(TEMPLATE) as f:
         template = f.read()
@@ -238,9 +233,7 @@ def main():
         sys.exit("index.html: missing <!-- specials:hero --> markers")
     changed.append(replace_between("index.html", "hero", hero_img(m.group(1), photo_attrs(current["photo"]), current.get("hero_focus"))))
 
-    waiting = [s["title"] for s in specials if s["start"] > today]
     print(f"current: {current['title']} ({current['start']}); {len(previous)} previous"
-          + (f"; scheduled: {', '.join(waiting)}" if waiting else "")
           + ("" if any(changed) else "; pages already up to date"))
 
 

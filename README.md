@@ -30,8 +30,15 @@ then runs `_build/build_specials.py`, which:
 - shrinks the uploaded photo to WebP (1500px + a 750px phone copy).
 
 It commits the updated pages and Cloudflare deploys them — about two minutes
-after saving. A special with a future first day stays hidden until that day
-(the Action also runs every morning).
+after saving. The special with the latest first day is always the current one.
+
+### Practising
+
+Use the **practice** branch: in Pages CMS switch the branch (top left) from
+`main` to `practice` and add or edit specials freely. The same build runs on
+that branch and Cloudflare publishes it to a separate preview address — the
+live site only ever shows `main`. To reset practice to match the live site:
+`git checkout practice && git reset --hard main && git push -f origin practice`.
 
 The generated parts sit between `<!-- specials:… -->` marker comments; don't
 hand-edit inside them (the next build overwrites it). The section layout is

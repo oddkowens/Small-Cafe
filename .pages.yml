@@ -10,10 +10,10 @@ content:
   - name: specials
     label: Novels & Nibbles specials
     description: >
-      Add one entry per week. The newest special whose first day has arrived
-      becomes the "Current Special" (Novels & Nibbles page, the menu page and the
-      homepage photo); older ones move to "Previous Special" automatically.
-      A special dated in the future stays hidden until its first day.
+      Add one entry per week. The special with the latest first day becomes the
+      "Current Special" (Novels & Nibbles page, the menu page and the homepage
+      photo) about two minutes after saving; older ones move to "Previous
+      Special" automatically.
     type: collection
     path: specials
     format: json
@@ -33,7 +33,7 @@ content:
         required: true
       - name: start
         label: First day
-        description: The special goes live on this day (usually Wednesday).
+        description: Usually Wednesday. The latest first day is the current special.
         type: date
         required: true
       - name: end
