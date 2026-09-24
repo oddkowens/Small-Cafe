@@ -96,10 +96,24 @@ content:
         type: text
       - name: audio
         label: "Video: audio"
-        description: The music or voiceover (mp3, m4a or wav). The video is as long as the audio (12–60 seconds); without audio it's 20 seconds and silent.
+        description: The music or voiceover (mp3, m4a or wav). The video is as long as the audio, or the part set below (12–60 seconds); without audio it's 20 seconds and silent.
         type: file
         options:
           media: video
+      - name: audio_start
+        label: "Video: audio start"
+        description: Where in the audio to begin, e.g. 0:10. Leave empty to start at the beginning.
+        type: string
+        pattern:
+          regex: '^(\d{1,2}:\d{2}(\.\d+)?|\d+(\.\d+)?)?$'
+          message: Use minutes:seconds like 0:10, or seconds like 10
+      - name: audio_end
+        label: "Video: audio end"
+        description: Where to stop, e.g. 0:30. The video is as long as this section. Leave empty to play to the end (60 seconds at most).
+        type: string
+        pattern:
+          regex: '^(\d{1,2}:\d{2}(\.\d+)?|\d+(\.\d+)?)?$'
+          message: Use minutes:seconds like 0:30, or seconds like 30
       - name: decorations
         label: "Video: decoration emoji"
         description: >

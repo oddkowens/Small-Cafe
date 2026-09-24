@@ -35,7 +35,8 @@ after saving. The special with the latest first day is always the current one.
 ### Weekly video
 
 The special's entry also has a **Video** section: book cover, book-page text,
-audio (mp3/m4a/wav), decoration emoji, decoration style and an optional
+audio (mp3/m4a/wav) with optional start/end times (e.g. 0:10–0:30 — the clip
+is as long as that section), decoration emoji, decoration style and an optional
 sticker. Decoration pictures are Microsoft's Fluent Emoji 3D (MIT licence):
 left empty, `_video/decorations.mjs` picks ones matching the title and
 description (from `_video/emoji-index.json`) and writes them back into the entry. Save, then press

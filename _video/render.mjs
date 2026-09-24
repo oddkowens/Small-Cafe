@@ -98,7 +98,25 @@ const props = {
   emoji,
   theme,
 };
-const seconds = props.audio ? audioSeconds(path.join(HERE, "public", props.audio)) : DEFAULT_SECONDS;
+// "0:10", "1:05.5" or "10" → seconds.
+const toSeconds = (v) => {
+  if (v == null || String(v).trim() === "") return null;
+  const parts = String(v).trim().split(":").map(Number);
+  const secs = parts.length === 2 ? parts[0] * 60 + parts[1] : parts[0];
+  if (!Number.isFinite(secs) || secs < 0) throw new Error(`can't read the audio time "${v}" — use 0:10 or 10`);
+  return secs;
+};
+
+let seconds = DEFAULT_SECONDS;
+props.audioStartFrame = 0;
+if (props.audio) {
+  const total = audioSeconds(path.join(HERE, "public", props.audio));
+  const start = toSeconds(special.audio_start) ?? 0;
+  const end = Math.min(toSeconds(special.audio_end) ?? total, total);
+  if (end <= start) throw new Error(`audio end (${special.audio_end}) must be after audio start (${special.audio_start})`);
+  seconds = end - start;
+  props.audioStartFrame = Math.round(start * FPS);
+}
 props.durationInFrames = Math.round(Math.min(MAX_SECONDS, Math.max(MIN_SECONDS, seconds)) * FPS);
 
 const outDir = path.join(HERE, "out");
