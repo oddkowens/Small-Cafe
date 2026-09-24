@@ -85,17 +85,23 @@ jobs:
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "### 🎬 [Download the video]($url)" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Save the link in the special
+      - name: Save the link (and the decorations used) in the special
         env:
           FILE: ${{ steps.which.outputs.path }}
           URL: ${{ steps.publish.outputs.url }}
+          PICKED: _video/out/picked.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
           for attempt in 1 2 3; do
             git pull --rebase --quiet origin "$GITHUB_REF_NAME"
             # Cache-buster so a re-render isn't hidden by a cached download.
-            jq --arg url "$URL?v=$(date +%s)" '.video = $url' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
+            # Automatic picks are shown in the editor so they can be changed next time.
+            jq --arg url "$URL?v=$(date +%s)" --slurpfile picked "$PICKED" '
+              .video = $url
+              | .decorations = (if (.decorations // "") == "" then $picked[0].decorations else .decorations end)
+              | .theme = (if (.theme // "auto") == "auto" then $picked[0].theme else .theme end)
+            ' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
             git add "$FILE"
             git diff --cached --quiet && exit 0
             git commit -m "Video link for $(basename "$FILE" .json)"

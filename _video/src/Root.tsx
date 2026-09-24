@@ -12,6 +12,7 @@ const sample: ClipProps = {
   cover: null,
   audio: null,
   sticker: null,
+  emoji: [],
   theme: "confetti",
   durationInFrames: 20 * FPS,
 };
