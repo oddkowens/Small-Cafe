@@ -50,7 +50,7 @@ const timeline = (total: number, fps: number, hasCover: boolean) => {
 };
 
 // The summary's box on the book's left page.
-const SUMMARY = { left: 112, top: 262, width: 375, height: 430, lineHeight: 1.32 };
+const SUMMARY = { left: 112, top: 250, width: 375, height: 500, lineHeight: 1.32 };
 
 // Largest font size (36px down to 14px) at which the summary, word-wrapped in
 // the real font, fits the left page.
