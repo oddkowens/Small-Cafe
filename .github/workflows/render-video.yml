@@ -101,6 +101,7 @@ jobs:
               .video = $url
               | .decorations = (if (.decorations // "") == "" then $picked[0].decorations else .decorations end)
               | .theme = (if (.theme // "auto") == "auto" then $picked[0].theme else .theme end)
+              | .video_notes = $picked[0].notes
             ' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
             git add "$FILE"
             git diff --cached --quiet && exit 0
