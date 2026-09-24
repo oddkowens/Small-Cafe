@@ -27,6 +27,7 @@ export type ClipProps = {
   photo: string; // dish photo (path under public/)
   cover: string | null; // book cover
   audio: string | null;
+  audioStartFrame?: number; // where in the audio the clip begins
   sticker: string | null; // optional themed sticker (PNG with transparency)
   emoji: string[]; // decoration pictures (Fluent Emoji 3D), most relevant first
   theme: string;
@@ -349,13 +350,14 @@ export const SpecialClip: React.FC<ClipProps> = (props) => {
   const book = <BookScene {...props} frame={frame} start={t.flipStart} />;
 
   const flip = interpolate(frame, [t.flipStart, t.flipEnd], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
-  // Audio fades out over the last second so a longer track doesn't cut off abruptly.
-  const volume = (f: number) => interpolate(f, [durationInFrames - fps, durationInFrames - 1], [1, 0], clamp);
+  // Audio fades in briefly (it may start mid-song) and out over the last second.
+  const volume = (f: number) =>
+    Math.min(interpolate(f, [0, fps * 0.4], [0, 1], clamp), interpolate(f, [durationInFrames - fps, durationInFrames - 1], [1, 0], clamp));
 
   return (
     <AbsoluteFill style={{ background: NAVY }}>
       {frame < t.flipStart ? front : frame < t.flipEnd ? <PageFlip progress={flip} width={width} height={height} front={front} back={book} /> : book}
-      {props.audio && <Audio src={staticFile(props.audio)} volume={volume} />}
+      {props.audio && <Audio src={staticFile(props.audio)} trimBefore={props.audioStartFrame ?? 0} volume={volume} />}
     </AbsoluteFill>
   );
 };
