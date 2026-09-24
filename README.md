@@ -35,7 +35,10 @@ after saving. The special with the latest first day is always the current one.
 ### Weekly video
 
 The special's entry also has a **Video** section: book cover, book-page text,
-audio (mp3/m4a/wav), decorations and an optional sticker. Save, then press
+audio (mp3/m4a/wav), decoration emoji, decoration style and an optional
+sticker. Decoration pictures are Microsoft's Fluent Emoji 3D (MIT licence):
+left empty, `_video/decorations.mjs` picks ones matching the title and
+description (from `_video/emoji-index.json`) and writes them back into the entry. Save, then press
 **Make video** (top of the entry). The **Render special video** Action
 (`.github/workflows/render-video.yml`) renders a 1080×1080 MP4 with
 `_video/render.mjs` (Remotion), attaches it to a GitHub release and writes the

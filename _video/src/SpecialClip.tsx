@@ -28,6 +28,7 @@ export type ClipProps = {
   cover: string | null; // book cover
   audio: string | null;
   sticker: string | null; // optional themed sticker (PNG with transparency)
+  emoji: string[]; // decoration pictures (Fluent Emoji 3D), most relevant first
   theme: string;
   durationInFrames: number;
 };
@@ -96,7 +97,14 @@ const Background: React.FC<{ dim?: number }> = ({ dim = 0 }) => (
   </AbsoluteFill>
 );
 
-const Sticker: React.FC<{ src: string; frame: number; start: number; x: number; y: number }> = ({ src, frame, start, x, y }) => {
+const Sticker: React.FC<{ src: string; frame: number; start: number; x: number; y: number; size?: number }> = ({
+  src,
+  frame,
+  start,
+  x,
+  y,
+  size = 200,
+}) => {
   const { fps } = useVideoConfig();
   const pop = spring({ frame: frame - start - 8, fps, config: { damping: 10 } });
   const bob = Math.sin((frame - start) / 8) * 8;
@@ -107,8 +115,8 @@ const Sticker: React.FC<{ src: string; frame: number; start: number; x: number; 
         position: "absolute",
         left: x,
         top: y + bob,
-        width: 200,
-        height: 200,
+        width: size,
+        height: size,
         objectFit: "contain",
         transform: `scale(${pop}) rotate(${Math.sin(frame / 12) * 6}deg)`,
         filter: "drop-shadow(0 8px 12px rgba(0,0,0,0.4))",
@@ -117,9 +125,49 @@ const Sticker: React.FC<{ src: string; frame: number; start: number; x: number; 
   );
 };
 
-// Everything before the page flip: intro, cover, dish photo, theme decorations.
-const FrontScenes: React.FC<ClipProps & { frame: number; t: ReturnType<typeof timeline> }> = ({ frame, t, cover, photo, sticker, theme }) => {
+// Small copies of the decoration pictures drifting around the edges.
+const SPOTS: [number, number][] = [
+  [70, 430],
+  [955, 110],
+  [950, 560],
+  [60, 930],
+  [520, 960],
+];
+const Floaters: React.FC<{ emoji: string[]; frame: number }> = ({ emoji, frame }) => {
   const { fps } = useVideoConfig();
+  if (!emoji.length) return null;
+  return (
+    <AbsoluteFill>
+      {SPOTS.map(([x, y], i) => {
+        const pop = spring({ frame: frame - 10 - i * 5, fps, config: { damping: 12 } });
+        return (
+          <Img
+            key={i}
+            src={staticFile(emoji[i % emoji.length])}
+            style={{
+              position: "absolute",
+              left: x - 45,
+              top: y - 45 + Math.sin((frame + i * 20) / 14) * 10,
+              width: 90,
+              height: 90,
+              opacity: 0.95,
+              transform: `scale(${pop}) rotate(${Math.sin((frame + i * 30) / 20) * 12}deg)`,
+              filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.4))",
+            }}
+          />
+        );
+      })}
+    </AbsoluteFill>
+  );
+};
+
+// Everything before the page flip: intro, cover, dish photo, theme decorations.
+const FrontScenes: React.FC<ClipProps & { frame: number; t: ReturnType<typeof timeline> }> = ({ frame, t, cover, photo, sticker, emoji, theme }) => {
+  const { fps } = useVideoConfig();
+  // The uploaded sticker, else the best-matching emoji, sits by the cover;
+  // the next emoji sits by the dish.
+  const coverSticker = sticker ?? emoji[0] ?? null;
+  const dishSticker = emoji[1] ?? emoji[0] ?? sticker;
   const bgIn = interpolate(frame, [0, 8], [0, 1], clamp);
 
   const coverIn = spring({ frame: frame - t.coverStart, fps, config: { damping: 14, stiffness: 90 } });
@@ -136,6 +184,7 @@ const FrontScenes: React.FC<ClipProps & { frame: number; t: ReturnType<typeof ti
       <AbsoluteFill style={{ opacity: bgIn }}>
         <ThemeLayer theme={theme} />
       </AbsoluteFill>
+      <Floaters emoji={emoji} frame={frame} />
 
       {cover && frame < t.dishStart + 6 && (
         <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: coverOut }}>
@@ -149,7 +198,7 @@ const FrontScenes: React.FC<ClipProps & { frame: number; t: ReturnType<typeof ti
               transform: `translateY(${(1 - coverIn) * 120}px) rotate(${(1 - coverIn) * -28}deg) scale(${0.6 + coverIn * 0.4})`,
             }}
           />
-          {sticker && <Sticker src={sticker} frame={frame} start={t.coverStart} x={760} y={760} />}
+          {coverSticker && <Sticker src={coverSticker} frame={frame} start={t.coverStart} x={760} y={760} />}
         </AbsoluteFill>
       )}
 
@@ -166,7 +215,7 @@ const FrontScenes: React.FC<ClipProps & { frame: number; t: ReturnType<typeof ti
           >
             <Img src={staticFile(photo)} style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${dishZoom})` }} />
           </div>
-          {sticker && <Sticker src={sticker} frame={frame} start={t.dishStart} x={40} y={40} />}
+          {dishSticker && <Sticker src={dishSticker} frame={frame} start={t.dishStart} x={40} y={40} />}
         </AbsoluteFill>
       )}
     </AbsoluteFill>

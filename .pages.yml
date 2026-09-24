@@ -100,16 +100,23 @@ content:
         type: file
         options:
           media: video
+      - name: decorations
+        label: "Video: decoration emoji"
+        description: >
+          Leave empty and the video picks 3D pictures that match the dish (e.g. 🍎🥩🥔),
+          then shows its picks here. To choose your own, type emoji here
+          (Windows key + . on Windows, Ctrl + Cmd + Space on a Mac) and press Make video again.
+        type: string
       - name: theme
-        label: "Video: decorations"
-        description: Animated decorations over the cover and dish.
+        label: "Video: decoration style"
+        description: Animated effects over the cover and dish. "auto" picks from the story (mystery → question marks, romance → hearts, sea → waves…).
         type: select
-        default: sparkles
+        default: auto
         options:
-          values: [sparkles, confetti, question-marks, hearts, sun, waves, stars, none]
+          values: [auto, sparkles, confetti, question-marks, hearts, sun, waves, stars, none]
       - name: sticker
-        label: "Video: sticker (optional)"
-        description: A themed picture that bounces next to the cover and dish, e.g. an apple or a magnifying glass. A PNG with a transparent background works best.
+        label: "Video: your own sticker (optional)"
+        description: Your own picture (e.g. made in Canva) to use by the cover instead of the first emoji. A PNG with a transparent background works best.
         type: image
         options:
           media: video

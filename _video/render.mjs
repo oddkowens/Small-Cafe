@@ -5,12 +5,14 @@
 //   node render.mjs ../specials/….json --still 400 frame.png   # one frame, for checking layout
 //
 // Copies that week's photo / cover / audio / sticker into public/week/ (Remotion
-// serves files from public/), works out the length from the audio, and renders
-// a 1080×1080 MP4 with the audio baked in.
+// serves files from public/), picks and downloads the decoration emoji (see
+// decorations.mjs), works out the length from the audio, and renders a
+// 1080×1080 MP4 with the audio baked in.
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { autoPick, autoTheme, download, fromTyped } from "./decorations.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.dirname(HERE);
@@ -75,13 +77,26 @@ fs.rmSync(WEEK, { recursive: true, force: true });
 fs.mkdirSync(WEEK, { recursive: true });
 
 if (!special.photo) throw new Error("the special needs a photo");
+
+// Decoration pictures: the emoji typed in the editor, or picked from the text.
+const typed = fromTyped(special.decorations);
+if (typed.unknown.length) console.warn(`ignoring decorations with no picture: ${typed.unknown.join(" ")}`);
+const picks = typed.found.length ? typed.found.slice(0, 4) : autoPick(special);
+const emoji = [];
+for (const [i, e] of picks.entries()) {
+  await download(e, path.join(WEEK, `emoji-${i}.png`));
+  emoji.push(`week/emoji-${i}.png`);
+}
+const theme = !special.theme || special.theme === "auto" ? autoTheme(special) : special.theme;
+
 const props = {
   summary: summaryText(),
   photo: stage("photo", "photo"),
   cover: stage("cover", "cover"),
   audio: stage("audio", "audio"),
   sticker: stage("sticker", "sticker"),
-  theme: special.theme || "sparkles",
+  emoji,
+  theme,
 };
 const seconds = props.audio ? audioSeconds(path.join(HERE, "public", props.audio)) : DEFAULT_SECONDS;
 props.durationInFrames = Math.round(Math.min(MAX_SECONDS, Math.max(MIN_SECONDS, seconds)) * FPS);
@@ -90,7 +105,9 @@ const outDir = path.join(HERE, "out");
 fs.mkdirSync(outDir, { recursive: true });
 const propsFile = path.join(outDir, "props.json");
 fs.writeFileSync(propsFile, JSON.stringify(props, null, 2));
-console.log(`${special.title}: ${(props.durationInFrames / FPS).toFixed(1)}s, theme ${props.theme}`);
+// What was used, so the workflow can show it in the editor for next time.
+fs.writeFileSync(path.join(outDir, "picked.json"), JSON.stringify({ decorations: picks.map((e) => e.glyph).join(""), theme }));
+console.log(`${special.title}: ${(props.durationInFrames / FPS).toFixed(1)}s, theme ${theme}, decorations ${picks.map((e) => e.glyph).join(" ") || "none"}`);
 
 const stillAt = args.indexOf("--still");
 const cli = (cmd) => execFileSync("npx", ["remotion", ...cmd], { cwd: HERE, stdio: "inherit" });
