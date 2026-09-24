@@ -1,0 +1,64 @@
+# Pages CMS (https://app.pagescms.org) — the editor Ellen and Kyle use for the
+# weekly Novels & Nibbles special. Saving commits to GitHub; the "Build
+# specials" GitHub Action then updates the pages and Cloudflare deploys them.
+media:
+  input: images/specials
+  output: /images/specials
+  extensions: [jpg, jpeg, png, webp]
+
+content:
+  - name: specials
+    label: Novels & Nibbles specials
+    description: >
+      Add one entry per week. The newest special whose first day has arrived
+      becomes the "Current Special" (Novels & Nibbles page, the menu page and the
+      homepage photo); older ones move to "Previous Special" automatically.
+      A special dated in the future stays hidden until its first day.
+    type: collection
+    path: specials
+    format: json
+    filename: "{year}-{month}-{day}-{primary}.json"
+    view:
+      primary: title
+      fields: [title, start, price]
+      sort: [start, title]
+      default:
+        sort: start
+        order: desc
+    fields:
+      - name: title
+        label: Book & author
+        description: 'Shown as the heading, e.g. "Brady Bunch Book by Andy Edelstein & Frank Lovece"'
+        type: string
+        required: true
+      - name: start
+        label: First day
+        description: The special goes live on this day (usually Wednesday).
+        type: date
+        required: true
+      - name: end
+        label: Last day
+        description: Usually Sunday. The date line only shows when both days are filled in.
+        type: date
+      - name: price
+        label: Price
+        description: e.g. $16.95
+        type: string
+      - name: photo
+        label: Photo
+        description: Used on the Novels & Nibbles page and as the homepage background.
+        type: image
+        required: true
+      - name: hero_focus
+        label: Homepage photo focus
+        description: Which part of the photo to keep in view on the wide homepage banner.
+        type: select
+        default: center
+        options:
+          values: [top, center, bottom]
+      - name: description
+        label: Description
+        description: The story and the dish. Each paragraph shows as its own paragraph on the site.
+        type: rich-text
+        options:
+          format: html

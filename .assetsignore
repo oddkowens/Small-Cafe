@@ -1,6 +1,11 @@
 .git
+.github
 .gitignore
 .assetsignore
+.pages.yml
 wrangler.jsonc
 README.md
 .DS_Store
+.gitkeep
+_build
+specials
