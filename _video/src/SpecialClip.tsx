@@ -191,11 +191,13 @@ const FrontScenes: React.FC<ClipProps & { frame: number; t: ReturnType<typeof ti
         <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: coverOut }}>
           <Img
             src={staticFile(cover)}
+            // Fixed box + contain: small covers are scaled up to fill it too.
+            // drop-shadow (not box-shadow) hugs the cover, not the box.
             style={{
-              maxWidth: 700,
-              maxHeight: 900,
+              width: 700,
+              height: 880,
               objectFit: "contain",
-              boxShadow: "0 24px 50px rgba(0,0,0,0.55)",
+              filter: "drop-shadow(0 24px 30px rgba(0,0,0,0.55))",
               transform: `translateY(${(1 - coverIn) * 120}px) rotate(${(1 - coverIn) * -28}deg) scale(${0.6 + coverIn * 0.4})`,
             }}
           />

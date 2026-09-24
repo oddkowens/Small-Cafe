@@ -84,13 +84,12 @@ export function autoPick(special, count = 3) {
   for (const e of INDEX) {
     const weight = GROUP_WEIGHT[e.group];
     if (!weight || GENERIC.has(e.glyph.replace(/\uFE0F/g, ""))) continue;
-    const terms = new Set([...words(e.name), ...e.keywords.flatMap(words)].filter((t) => !IGNORE.has(t) && t.length > 2));
+    const nameTerms = words(e.name).filter((t) => !IGNORE.has(t) && t.length > 2);
+    const terms = new Set([...nameTerms, ...e.keywords.flatMap(words)].filter((t) => !IGNORE.has(t) && t.length > 2));
     let score = 0;
-    for (const t of terms) {
-      score += (freq.get(t) || 0) * (words(e.name).includes(t) ? 2 : 1);
-      // Compound words: "applesauce" contains "apple".
-      if (t.length >= 5) for (const [w, n] of freq) if (w !== t && w.includes(t)) score += n * 1.5;
-    }
+    for (const t of terms) score += (freq.get(t) || 0) * (nameTerms.includes(t) ? 2 : 1);
+    // Compound words, name only: "applesauce" → apple (but not "bittersweet" → candy's "sweet").
+    for (const t of nameTerms) if (t.length >= 5) for (const [w, n] of freq) if (w !== t && w.startsWith(t)) score += n * 1.5;
     if (score > 0) scored.push({ e, score: score * weight });
   }
   scored.sort((a, b) => b.score - a.score);

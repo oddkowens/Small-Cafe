@@ -13,6 +13,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { autoPick, autoTheme, download, fromTyped } from "./decorations.mjs";
+import { imageSize, openLibraryCover } from "./cover.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.dirname(HERE);
@@ -43,19 +44,24 @@ function stage(field, name) {
   return `week/${dest}`;
 }
 
+// HTML → plain text ("&amp;" → "&", "&rsquo;" → "’", tags dropped).
+const ENTITIES = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", rsquo: "’", lsquo: "‘", rdquo: "”", ldquo: "“", hellip: "…", mdash: "—", ndash: "–" };
+const plain = (html = "") =>
+  html
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+    .replace(/&([a-z]+);/gi, (m, n) => ENTITIES[n.toLowerCase()] ?? m)
+    .replace(/\s+/g, " ")
+    .trim();
+
 // The book page shows a short summary. Use the one written for the video, or
 // fall back to the first paragraph of the website description, trimmed to a
 // sentence boundary so it fits the page.
 function summaryText() {
-  if (special.video_summary?.trim()) return special.video_summary.trim();
-  const first = (special.description || "").split(/<\/p>/i)[0];
-  const text = first
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&[a-z]+;/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  if (special.video_summary?.trim()) return plain(special.video_summary);
+  const text = plain((special.description || "").split(/<\/p>/i)[0]);
   if (text.length <= 420) return text;
   const cut = text.slice(0, 420);
   const end = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "));
@@ -79,8 +85,15 @@ fs.mkdirSync(WEEK, { recursive: true });
 if (!special.photo) throw new Error("the special needs a photo");
 
 // Decoration pictures: the emoji typed in the editor, or picked from the text.
+// Things Ellen should know, shown in the entry's "Video notes" after a render.
+const notes = [];
+const warn = (msg) => {
+  notes.push(msg);
+  console.log(process.env.GITHUB_ACTIONS ? `::warning::${msg}` : `warning: ${msg}`);
+};
+
 const typed = fromTyped(special.decorations);
-if (typed.unknown.length) console.warn(`ignoring decorations with no picture: ${typed.unknown.join(" ")}`);
+if (typed.unknown.length) warn(`No picture for ${typed.unknown.join(" ")} in the decorations, so it was skipped.`);
 const picks = typed.found.length ? typed.found.slice(0, 4) : autoPick(special);
 const emoji = [];
 for (const [i, e] of picks.entries()) {
@@ -89,10 +102,24 @@ for (const [i, e] of picks.entries()) {
 }
 const theme = !special.theme || special.theme === "auto" ? autoTheme(special) : special.theme;
 
+// Book cover: the upload, unless Open Library has a bigger copy (or there's
+// no upload). Small covers still work — they're scaled up — but look soft.
+let cover = stage("cover", "cover");
+let coverSize = cover ? imageSize(path.join(HERE, "public", cover)) : null;
+if (!coverSize || coverSize.h < 600) {
+  const found = await openLibraryCover(special.title, path.join(WEEK, "cover-openlibrary.jpg"));
+  if (found && (!coverSize || found.h > coverSize.h)) {
+    console.log(`using Open Library's cover (${found.w}×${found.h})${coverSize ? ` instead of the ${coverSize.w}×${coverSize.h} upload` : ""}`);
+    cover = "week/cover-openlibrary.jpg";
+    coverSize = found;
+  }
+}
+if (coverSize && coverSize.h < 500) warn(`The book cover is only ${coverSize.w}×${coverSize.h} pixels, so it will look blurry. Upload a bigger one (600+ pixels tall).`);
+
 const props = {
   summary: summaryText(),
   photo: stage("photo", "photo"),
-  cover: stage("cover", "cover"),
+  cover,
   audio: stage("audio", "audio"),
   sticker: stage("sticker", "sticker"),
   emoji,
@@ -124,7 +151,10 @@ fs.mkdirSync(outDir, { recursive: true });
 const propsFile = path.join(outDir, "props.json");
 fs.writeFileSync(propsFile, JSON.stringify(props, null, 2));
 // What was used, so the workflow can show it in the editor for next time.
-fs.writeFileSync(path.join(outDir, "picked.json"), JSON.stringify({ decorations: picks.map((e) => e.glyph).join(""), theme }));
+fs.writeFileSync(
+  path.join(outDir, "picked.json"),
+  JSON.stringify({ decorations: picks.map((e) => e.glyph).join(""), theme, notes: notes.join(" ") || "All good." }),
+);
 console.log(`${special.title}: ${(props.durationInFrames / FPS).toFixed(1)}s, theme ${theme}, decorations ${picks.map((e) => e.glyph).join(" ") || "none"}`);
 
 const stillAt = args.indexOf("--still");

@@ -86,7 +86,9 @@ content:
       # ── Video ──
       - name: cover
         label: "Video: book cover"
-        description: The book cover image. Shown first in the video.
+        description: >
+          The book cover, shown first in the video. Use a large image (600+ pixels tall) so it's sharp.
+          Leave empty to try Open Library's copy automatically.
         type: image
         options:
           media: video
@@ -138,4 +140,9 @@ content:
         label: Video
         description: Download link for the finished video — filled in by "Make video".
         type: string
+        readonly: true
+      - name: video_notes
+        label: Video notes
+        description: Anything to fix from the last "Make video" (e.g. a book cover too small to look sharp).
+        type: text
         readonly: true
