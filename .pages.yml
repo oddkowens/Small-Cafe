@@ -23,8 +23,8 @@ content:
       Add one entry per week. The special with the latest first day becomes the
       "Current Special" (Novels & Nibbles page, the menu page and the homepage
       photo) about two minutes after saving; older ones move to "Previous
-      Special" automatically. Fill in the Video section and press "Make video"
-      for the weekly clip.
+      Special" automatically. Saving the newest special also makes its weekly
+      video (the download link appears about a minute later).
     type: collection
     path: specials
     format: json
@@ -55,10 +55,14 @@ content:
         workflow: render-video.yml
         scope: entry
         confirm:
-          title: Make the weekly video?
-          message: Save your changes first. The video takes about 3 minutes; the download link then appears in the "Video" field (reload the entry).
+          title: Make the video again?
+          message: >
+            Saving the newest special already makes its video — use this for an
+            older special, or to re-make one. Save your changes first. Takes about
+            a minute; then reload the entry for the link.
           button: Make video
     fields:
+      # ── Every week ──
       - name: title
         label: Book & author
         description: 'Shown as the heading, e.g. "Brady Bunch Book by Andy Edelstein & Frank Lovece"'
@@ -66,33 +70,22 @@ content:
         required: true
       - name: start
         label: First day
-        description: Usually Wednesday. The latest first day is the current special.
+        description: Leave as today's date and it becomes this Wednesday (the café is closed Mon/Tue). The latest first day is the current special.
         type: date
         required: true
       - name: end
         label: Last day
-        description: Leave empty for the Sunday after the first day (filled in automatically when you save).
+        description: Leave as is for the Sunday after the first day (set automatically when you save). Change it only if the special runs differently.
         type: date
-      - name: hide_dates
-        label: Hide the date line
-        description: Tick to leave the dates off the website (the oldest specials never showed them).
-        type: boolean
       - name: price
         label: Price
         description: e.g. $16.95
         type: string
       - name: photo
-        label: Photo
+        label: Photo of the dish
         description: Used on the Novels & Nibbles page, as the homepage background, and in the video.
         type: image
         required: true
-      - name: hero_focus
-        label: Homepage photo focus
-        description: Which part of the photo to keep in view on the wide homepage banner.
-        type: select
-        default: center
-        options:
-          values: [top, center, bottom]
       - name: description
         label: Description
         description: The story and the dish. Each paragraph shows as its own paragraph on the site.
@@ -100,22 +93,18 @@ content:
         options:
           format: html
 
-      # ── Video ──
+      # ── Video (made automatically when you save the newest special) ──
       - name: cover
         label: "Video: book cover"
         description: >
-          The book cover, shown first in the video. Use a large image (600+ pixels tall) so it's sharp.
-          Leave empty to try Open Library's copy automatically.
+          Leave empty and the video finds the cover itself (Google Books / Open Library).
+          Upload one only if it can't, or picks the wrong edition — 600+ pixels tall so it's sharp.
         type: image
         options:
           media: video
-      - name: video_summary
-        label: "Video: book page text"
-        description: The short blurb on the open book (about 2–4 sentences). Leave empty to use the start of the description.
-        type: text
       - name: audio
         label: "Video: audio"
-        description: The music or voiceover (mp3, m4a or wav). The video is as long as the audio, or the part set below (12–60 seconds); without audio it's 20 seconds and silent.
+        description: The music or voiceover (mp3, m4a or wav) if the café sent a file. Leave empty for a silent video and add the song in the Facebook/Instagram app when posting.
         type: file
         options:
           media: video
@@ -128,17 +117,21 @@ content:
           message: Use minutes:seconds like 0:10, or seconds like 10
       - name: audio_end
         label: "Video: audio end"
-        description: Where to stop, e.g. 0:30. The video is as long as this section. Leave empty to play to the end (60 seconds at most).
+        description: Where to stop, e.g. 0:30. The video is as long as this section (12–60 seconds). Leave empty to play to the end.
         type: string
         pattern:
           regex: '^(\d{1,2}:\d{2}(\.\d+)?|\d+(\.\d+)?)?$'
           message: Use minutes:seconds like 0:30, or seconds like 30
+      - name: video_summary
+        label: "Video: book page text"
+        description: The short blurb on the open book (2–4 sentences). Leave empty to use the start of the description.
+        type: text
       - name: decorations
         label: "Video: decoration emoji"
         description: >
           Leave empty and the video picks 3D pictures that match the dish (e.g. 🍎🥩🥔),
           then shows its picks here. To choose your own, type emoji here
-          (Windows key + . on Windows, Ctrl + Cmd + Space on a Mac) and press Make video again.
+          (Windows key + . on Windows, Ctrl + Cmd + Space on a Mac) and save again.
         type: string
       - name: theme
         label: "Video: decoration style"
@@ -147,19 +140,32 @@ content:
         default: auto
         options:
           values: [auto, sparkles, confetti, question-marks, hearts, sun, waves, stars, none]
+      - name: video
+        label: "Video: download link"
+        description: The finished video — filled in about a minute after saving (reload the entry to see it).
+        type: string
+        readonly: true
+      - name: video_notes
+        label: "Video: notes"
+        description: Anything to fix from the last video (e.g. a book cover too small to look sharp).
+        type: text
+        readonly: true
+
+      # ── Rarely needed ──
       - name: sticker
-        label: "Video: your own sticker (optional)"
+        label: "Extra: your own sticker"
         description: Your own picture (e.g. made in Canva) to use by the cover instead of the first emoji. A PNG with a transparent background works best.
         type: image
         options:
           media: video
-      - name: video
-        label: Video
-        description: Download link for the finished video — filled in by "Make video".
-        type: string
-        readonly: true
-      - name: video_notes
-        label: Video notes
-        description: Anything to fix from the last "Make video" (e.g. a book cover too small to look sharp).
-        type: text
-        readonly: true
+      - name: hero_focus
+        label: "Extra: homepage photo focus"
+        description: Which part of the dish photo to keep in view on the wide homepage banner.
+        type: select
+        default: center
+        options:
+          values: [top, center, bottom]
+      - name: hide_dates
+        label: "Extra: hide the date line"
+        description: Tick to leave the dates off the website (the oldest specials never showed them).
+        type: boolean

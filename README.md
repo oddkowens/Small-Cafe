@@ -29,7 +29,9 @@ then runs `_build/build_specials.py`, which:
 - makes its photo the homepage (`index.html`) hero background;
 - shrinks the uploaded photo to WebP (1500px + a 750px phone copy).
 
-An empty "Last day" becomes the Sunday on or after the first day (written
+A first day on Monday/Tuesday (Pages CMS pre-fills today; the café is closed
+then) moves to that week's Wednesday unless a later last day was set. An empty
+(or pre-filled) "Last day" becomes the Sunday on or after the first day (written
 back into the entry); "Hide the date line" leaves the dates off (used for the
 four oldest specials, which never had them).
 
@@ -43,8 +45,12 @@ audio (mp3/m4a/wav) with optional start/end times (e.g. 0:10–0:30 — the clip
 is as long as that section), decoration emoji, decoration style and an optional
 sticker. Decoration pictures are Microsoft's Fluent Emoji 3D (MIT licence):
 left empty, `_video/decorations.mjs` picks ones matching the title and
-description (from `_video/emoji-index.json`) and writes them back into the entry. Save, then press
-**Make video** (top of the entry). The **Render special video** Action
+description (from `_video/emoji-index.json`) and writes them back into the entry. Saving the newest special
+(or any special with a cover/audio) makes its video automatically
+(`.github/workflows/auto-video.yml`); **Make video** (top of the entry) re-makes
+one. With no cover uploaded (or a small one) the render finds one on Google
+Books, then Open Library (`_video/cover.mjs`); a `GOOGLE_BOOKS_API_KEY` repo
+secret switches Google to its official API. The **Render special video** Action
 (`.github/workflows/render-video.yml`) renders a 1080×1080 MP4 with
 `_video/render.mjs` (Remotion), attaches it to a GitHub release and writes the
 download link into the entry's **Video** field (~3 minutes; reload the entry).

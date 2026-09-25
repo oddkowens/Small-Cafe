@@ -1,6 +1,7 @@
-# Renders the weekly Novels & Nibbles clip for one special. Started by the
-# "Make video" button in Pages CMS (which sends a JSON `payload` naming the
-# entry), or by hand from the Actions tab with the special's file path.
+# Renders the weekly Novels & Nibbles clip for one special. Started by
+# auto-video.yml when a special is saved, by the "Make video" button in Pages
+# CMS (which sends a JSON `payload` naming the entry), or by hand from the
+# Actions tab with the special's file path.
 #
 # The MP4 is attached to a GitHub release (so it doesn't bloat the repo) and
 # its download link is written into the special's "video" field.
@@ -67,6 +68,10 @@ jobs:
 
       - name: Render
         working-directory: _video
+        env:
+          # Optional: Google Books' official API for covers (repo secret). Without it
+          # the render uses Google's keyless search feed, then Open Library.
+          GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY }}
         run: node render.mjs "../${{ steps.which.outputs.path }}" "out/${{ steps.which.outputs.slug }}.mp4"
 
       - name: Publish the video

@@ -30,6 +30,21 @@ PHOTO_WIDTH, SMALL_WIDTH = 1500, 750
 
 # ── Loading ─────────────────────────────────────────────────────────────
 
+def default_start(special):
+    """Pages CMS fills a new entry's dates with today — usually Tuesday, when
+    the special arrives — but the café is closed Monday and Tuesday. A first
+    day on Mon/Tue whose last day is unset or no later (i.e. still the
+    pre-filled default) moves to that week's Wednesday. Dates entered on
+    purpose (a real Sunday last day) are left alone."""
+    start = datetime.date.fromisoformat(special["start"])
+    end = special.get("end")
+    if start.weekday() not in (0, 1) or (end and end > special["start"]) or special.get("hide_dates"):
+        return
+    special["start"] = (start + datetime.timedelta(days=2 - start.weekday())).isoformat()
+    special.pop("end", None)  # default_end sets the Sunday
+    save(special)
+
+
 def default_end(special):
     """No last day given (or one before the first day) → the Sunday on or after
     the first day (the café's specials run Wednesday–Sunday). Saved back so
@@ -234,8 +249,10 @@ def main():
     if not specials:
         sys.exit("no specials in specials/")
     for s in specials:
+        default_start(s)
         default_end(s)
         optimize_photo(s)
+    specials.sort(key=lambda s: (s["start"], s["_slug"]), reverse=True)  # starts may have moved
     current, previous = specials[0], specials[1:]
 
     with open(TEMPLATE) as f:

@@ -1,0 +1,47 @@
+# Makes the weekly video automatically when a special is saved in Pages CMS:
+# for the newest special (the current one), or any special with video fields
+# (cover / audio / sticker) filled in. Fixing a typo in an old special doesn't
+# render anything. Hands each one to "Render special video".
+#
+# Commits made by the Actions themselves (page builds, video links) don't
+# trigger this, so there's no loop.
+name: Auto video
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "specials/**"
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Start a render for each saved special that needs one
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then BEFORE=$(git rev-parse HEAD~1); fi
+          newest=$(python3 -c '
+          import json, glob
+          items = [(json.load(open(f))["start"], f) for f in glob.glob("specials/*.json")]
+          print(max(items)[1] if items else "")
+          ')
+          git diff --name-only --diff-filter=AM "$BEFORE" HEAD -- 'specials/*.json' | while read -r f; do
+            wants=$(jq -r 'if (.cover // .audio // .sticker // "") != "" then "yes" else "no" end' "$f")
+            if [ "$f" = "$newest" ] || [ "$wants" = "yes" ]; then
+              echo "rendering $f"
+              gh workflow run render-video.yml --ref "$GITHUB_REF_NAME" -f special="$f"
+            else
+              echo "skipping $f (older special, no video fields)"
+            fi
+          done

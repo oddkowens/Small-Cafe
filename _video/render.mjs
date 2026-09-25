@@ -13,7 +13,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { autoPick, autoTheme, download, fromTyped } from "./decorations.mjs";
-import { imageSize, openLibraryCover } from "./cover.mjs";
+import { googleBooksCover, imageSize, openLibraryCover } from "./cover.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.dirname(HERE);
@@ -102,18 +102,26 @@ for (const [i, e] of picks.entries()) {
 }
 const theme = !special.theme || special.theme === "auto" ? autoTheme(special) : special.theme;
 
-// Book cover: the upload, unless Open Library has a bigger copy (or there's
-// no upload). Small covers still work — they're scaled up — but look soft.
+// Book cover: an upload 600+ pixels tall is used as is. Otherwise the largest
+// of the upload, Google Books' copy and Open Library's copy. Small covers still
+// work — they're scaled up — but look soft.
 let cover = stage("cover", "cover");
 let coverSize = cover ? imageSize(path.join(HERE, "public", cover)) : null;
 if (!coverSize || coverSize.h < 600) {
-  const found = await openLibraryCover(special.title, path.join(WEEK, "cover-openlibrary.jpg"));
-  if (found && (!coverSize || found.h > coverSize.h)) {
-    console.log(`using Open Library's cover (${found.w}×${found.h})${coverSize ? ` instead of the ${coverSize.w}×${coverSize.h} upload` : ""}`);
-    cover = "week/cover-openlibrary.jpg";
-    coverSize = found;
+  for (const [source, find, file] of [
+    ["Google Books", googleBooksCover, "cover-google.jpg"],
+    ["Open Library", openLibraryCover, "cover-openlibrary.jpg"],
+  ]) {
+    if (coverSize && coverSize.h >= 600) break;
+    const found = await find(special.title, path.join(WEEK, file));
+    if (found && (!coverSize || found.h > coverSize.h)) {
+      console.log(`using ${source}'s cover (${found.w}×${found.h})${cover ? ` instead of ${coverSize.w}×${coverSize.h}` : ""}`);
+      cover = `week/${file}`;
+      coverSize = found;
+    }
   }
 }
+if (!cover) warn("Couldn't find the book cover automatically — upload one in \"Video: book cover\".");
 if (coverSize && coverSize.h < 500) warn(`The book cover is only ${coverSize.w}×${coverSize.h} pixels, so it will look blurry. Upload a bigger one (600+ pixels tall).`);
 
 const props = {
