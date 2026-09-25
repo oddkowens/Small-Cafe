@@ -1,0 +1,60 @@
+# Resets the practice copy of the site: the "practice" branch is set back to
+# exactly what's live (main), and every video rendered from practice is
+# deleted. Started by the "Reset practice" button in Pages CMS. Only ever
+# touches the practice branch and the video-practice-* releases.
+name: Reset practice
+
+on:
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: "Sent by Pages CMS"
+        required: false
+        default: ""
+      dry_run:
+        description: "Only list what would be reset/deleted"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: reset-practice
+  cancel-in-progress: false
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Reset the practice branch to the live site
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          git fetch --quiet origin practice || true
+          echo "practice: $(git rev-parse --short origin/practice 2>/dev/null || echo none) → main: $(git rev-parse --short origin/main)"
+          git log --oneline origin/main..origin/practice 2>/dev/null | sed 's/^/  dropping: /' || true
+          if [ "$DRY_RUN" = "true" ]; then echo "(dry run — not changed)"; exit 0; fi
+          git push --force origin origin/main:refs/heads/practice
+          echo "### Practice reset to the live site" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Delete the practice videos
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          gh release list --limit 200 --json tagName -q '.[].tagName' | { grep '^video-practice-' || true; } | while read -r tag; do
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "would delete: $tag"
+            else
+              gh release delete "$tag" --yes --cleanup-tag
+              echo "deleted: $tag"
+              echo "- deleted $tag" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done

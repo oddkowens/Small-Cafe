@@ -64,8 +64,9 @@ for companies of up to 3 people (ODD qualifies).
 Use the **practice** branch: in Pages CMS switch the branch (top left) from
 `main` to `practice` and add or edit specials freely. The same build runs on
 that branch and Cloudflare publishes it to a separate preview address — the
-live site only ever shows `main`. To reset practice to match the live site:
-`git checkout practice && git reset --hard main && git push -f origin practice`.
+live site only ever shows `main`. To start over, press **Reset practice** on the
+specials list (`.github/workflows/reset-practice.yml`): practice goes back to
+exactly what's live and the videos rendered from practice are deleted.
 
 The generated parts sit between `<!-- specials:… -->` marker comments; don't
 hand-edit inside them (the next build overwrites it). The section layout is

@@ -37,6 +37,19 @@ content:
         sort: start
         order: desc
     actions:
+      - name: reset-practice
+        label: Reset practice
+        workflow: reset-practice.yml
+        ref: main
+        scope: collection
+        confirm:
+          title: Reset the practice site?
+          message: >
+            The practice copy goes back to exactly what's on the live site: every
+            special, photo and upload added on the practice branch is removed, and
+            all videos made from practice are deleted. The live site isn't touched.
+            Takes about a minute; then switch branches (or reload) to see it.
+          button: Reset practice
       - name: make-video
         label: Make video
         workflow: render-video.yml
