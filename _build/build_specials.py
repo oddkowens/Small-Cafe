@@ -31,9 +31,14 @@ PHOTO_WIDTH, SMALL_WIDTH = 1500, 750
 # ── Loading ─────────────────────────────────────────────────────────────
 
 def default_end(special):
-    """No last day given → the Sunday on or after the first day (the café's
-    specials run Wednesday–Sunday). Saved back so the editor shows it."""
-    if special.get("end") or special.get("hide_dates"):
+    """No last day given (or one before the first day) → the Sunday on or after
+    the first day (the café's specials run Wednesday–Sunday). Saved back so
+    the editor shows it."""
+    if special.get("hide_dates"):
+        return
+    # Pages CMS pre-fills date fields with today's date, so an end before the
+    # start means "not really set" too.
+    if special.get("end") and special["end"] >= special["start"]:
         return
     start = datetime.date.fromisoformat(special["start"])
     special["end"] = (start + datetime.timedelta(days=(6 - start.weekday()) % 7)).isoformat()

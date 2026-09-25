@@ -1,12 +1,14 @@
-.git
-.github
+# Repo files Cloudflare should not publish. Leading "/" = top-level folder
+# only — a bare "specials" would also hide images/specials/ (the uploads).
+/.git
+/.github
 .gitignore
-.assetsignore
-.pages.yml
-wrangler.jsonc
-README.md
+/.assetsignore
+/.pages.yml
+/wrangler.jsonc
+/README.md
 .DS_Store
 .gitkeep
-_build
-specials
-_video
+/_build
+/specials
+/_video
