@@ -30,6 +30,23 @@ PHOTO_WIDTH, SMALL_WIDTH = 1500, 750
 
 # ── Loading ─────────────────────────────────────────────────────────────
 
+def default_end(special):
+    """No last day given → the Sunday on or after the first day (the café's
+    specials run Wednesday–Sunday). Saved back so the editor shows it."""
+    if special.get("end") or special.get("hide_dates"):
+        return
+    start = datetime.date.fromisoformat(special["start"])
+    special["end"] = (start + datetime.timedelta(days=(6 - start.weekday()) % 7)).isoformat()
+    save(special)
+
+
+def save(special):
+    data = {k: v for k, v in special.items() if not k.startswith("_")}
+    with open(special["_path"], "w") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+
+
 def load_specials():
     items = []
     for name in sorted(os.listdir(SPECIALS)):
@@ -89,10 +106,7 @@ def optimize_photo(special):
         os.remove(src)
         # Keep the leading "/" Pages CMS uses, so its editor still finds the photo.
         special["photo"] = ("/" if special["photo"].startswith("/") else "") + target
-        saved = {k: v for k, v in special.items() if not k.startswith("_")}
-        with open(special["_path"], "w") as f:
-            json.dump(saved, f, indent=2, ensure_ascii=False)
-            f.write("\n")
+        save(special)
 
 
 def image_size(path):
@@ -150,7 +164,7 @@ def text_html(special, align):
     out.append(desc.strip())
     if special.get("price"):
         out.append(f"<h4 {h}>{html.escape(special['price'].strip(), quote=False)}</h4>")
-    if special.get("start") and special.get("end"):
+    if special.get("start") and special.get("end") and not special.get("hide_dates"):
         out.append(f"<h4 {h}>{fmt_date(special['start'])} - {fmt_date(special['end'])}</h4>")
     return "".join(out)
 
@@ -215,6 +229,7 @@ def main():
     if not specials:
         sys.exit("no specials in specials/")
     for s in specials:
+        default_end(s)
         optimize_photo(s)
     current, previous = specials[0], specials[1:]
 
