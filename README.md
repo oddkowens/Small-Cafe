@@ -29,6 +29,10 @@ then runs `_build/build_specials.py`, which:
 - makes its photo the homepage (`index.html`) hero background;
 - shrinks the uploaded photo to WebP (1500px + a 750px phone copy).
 
+An empty "Last day" becomes the Sunday on or after the first day (written
+back into the entry); "Hide the date line" leaves the dates off (used for the
+four oldest specials, which never had them).
+
 It commits the updated pages and Cloudflare deploys them — about two minutes
 after saving. The special with the latest first day is always the current one.
 

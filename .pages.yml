@@ -58,8 +58,12 @@ content:
         required: true
       - name: end
         label: Last day
-        description: Usually Sunday. The date line only shows when both days are filled in.
+        description: Leave empty for the Sunday after the first day (filled in automatically when you save).
         type: date
+      - name: hide_dates
+        label: Hide the date line
+        description: Tick to leave the dates off the website (the oldest specials never showed them).
+        type: boolean
       - name: price
         label: Price
         description: e.g. $16.95
