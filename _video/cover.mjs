@@ -73,6 +73,7 @@ async function googleBookIds(title, author) {
   if (key) {
     const q = `intitle:"${title}"${author ? `+inauthor:"${author.split(/\s*(?:&|and)\s*/)[0]}"` : ""}`;
     const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=8&printType=books&key=${key}`);
+    console.log(`Google Books API search: ${res.status}`);
     if (res.ok) {
       const items = (await res.json()).items || [];
       return items
@@ -80,6 +81,7 @@ async function googleBookIds(title, author) {
         .map((i) => i.id);
     }
   }
+  console.log("Google Books keyless search");
   const res = await fetch(`https://books.google.com/books/feeds/volumes?q=${encodeURIComponent(`${title} ${author}`)}`, {
     headers: { "User-Agent": "Mozilla/5.0 (SmallCafeBandB video)" },
   });
