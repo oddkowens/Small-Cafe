@@ -1,0 +1,11 @@
+{
+  "title": "Publish Me Test by Claude",
+  "start": "2026-10-07",
+  "end": "2026-10-11",
+  "price": "$1.00",
+  "photo": "/images/specials/peach photo 1.webp",
+  "cover": "/_video/uploads/test cover.png",
+  "description": "<p>Publish test.</p>",
+  "video": "https://example.invalid/practice.mp4",
+  "video_notes": "practice only"
+}
