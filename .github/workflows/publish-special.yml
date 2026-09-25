@@ -1,0 +1,114 @@
+# Publishes ONE special from the practice branch to the live site: copies that
+# entry and the files it uses (dish photo + phone copy, cover, audio, sticker)
+# onto main, rebuilds the pages, and starts the live video. Nothing else on
+# practice comes along — the branches are never merged. Started by the
+# "Publish to live site" button on a practice entry in Pages CMS.
+name: Publish special to live
+
+on:
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: "Sent by Pages CMS"
+        required: false
+        default: ""
+      special:
+        description: "…or a special's path on the practice branch"
+        required: false
+        default: ""
+      target:
+        description: "Branch to publish to (main = live site; other values are for testing)"
+        required: false
+        default: main
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: publish-special
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target }}
+          fetch-depth: 0
+
+      - name: Which special
+        id: which
+        env:
+          PAYLOAD: ${{ inputs.payload }}
+          SPECIAL: ${{ inputs.special }}
+        run: |
+          path="$SPECIAL"
+          from="practice"
+          if [ -z "$path" ] && [ -n "$PAYLOAD" ]; then
+            path=$(printf '%s' "$PAYLOAD" | jq -r '.context.path // empty')
+            from=$(printf '%s' "$PAYLOAD" | jq -r '.repository.ref // "practice"')
+          fi
+          if [ "$from" != "practice" ]; then
+            echo "::error::This special is already on the live site. The Publish button is for specials on the practice branch."
+            exit 1
+          fi
+          git fetch --quiet origin practice
+          if [ -z "$path" ] || ! git cat-file -e "origin/practice:$path" 2>/dev/null; then
+            echo "::error::Couldn't find '$path' on the practice branch. Save it there first."
+            exit 1
+          fi
+          echo "path=$path" >> "$GITHUB_OUTPUT"
+          echo "title=$(git show "origin/practice:$path" | jq -r .title)" >> "$GITHUB_OUTPUT"
+
+      - name: Copy the entry and its files from practice
+        env:
+          FILE: ${{ steps.which.outputs.path }}
+        run: |
+          files=("$FILE")
+          while IFS= read -r p; do
+            p="${p#/}"
+            files+=("$p")
+            # The dish photo's phone-size copy, made by the practice build.
+            small="$(dirname "$p")/750/$(basename "$p")"
+            if git cat-file -e "origin/practice:$small" 2>/dev/null; then files+=("$small"); fi
+          done < <(git show "origin/practice:$FILE" | jq -r '[.photo, .cover, .audio, .sticker] | map(select(. != null and . != "")) | .[]')
+          for f in "${files[@]}"; do
+            git cat-file -e "origin/practice:$f" 2>/dev/null || { echo "::error::$f is missing on practice"; exit 1; }
+            mkdir -p "$(dirname "$f")"
+            git show "origin/practice:$f" > "$f"
+            echo "copied $f"
+          done
+          # The practice video link and notes belong to practice; the live
+          # site makes its own video.
+          jq 'del(.video, .video_notes)' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Rebuild the pages
+        run: |
+          pip install --quiet pillow
+          python _build/build_specials.py
+
+      - name: Publish
+        env:
+          TARGET: ${{ inputs.target }}
+          TITLE: ${{ steps.which.outputs.title }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "Already identical on $TARGET — nothing to publish."; exit 0; fi
+          git commit -m "Publish from practice: $TITLE"
+          git push origin "HEAD:$TARGET"
+          echo "### Published “$TITLE” to $TARGET" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Make the live video
+        if: inputs.target == 'main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FILE: ${{ steps.which.outputs.path }}
+        run: gh workflow run render-video.yml --ref main -f special="$FILE"
