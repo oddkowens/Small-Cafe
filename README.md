@@ -70,7 +70,10 @@ for companies of up to 3 people (ODD qualifies).
 Use the **practice** branch: in Pages CMS switch the branch (top left) from
 `main` to `practice` and add or edit specials freely. The same build runs on
 that branch and Cloudflare publishes it to a separate preview address — the
-live site only ever shows `main`. To start over, press **Reset practice** on the
+live site only ever shows `main`. When a practice special is right, press
+**Publish to live site** on it (`.github/workflows/publish-special.yml`): just
+that entry and its files are copied to `main`, the pages rebuilt and the live
+video made — the branches are never merged. To start over, press **Reset practice** on the
 specials list (`.github/workflows/reset-practice.yml`): practice goes back to
 exactly what's live and the videos rendered from practice are deleted.
 
