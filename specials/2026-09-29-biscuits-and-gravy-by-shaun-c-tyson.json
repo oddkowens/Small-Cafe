@@ -9,10 +9,10 @@
   "audio_start": "00:53",
   "audio_end": "1:07",
   "video_summary": "Biscuit and Gravy are called heroes after saving their town’s fire station. Curious about who else helps their community, they set out to find other hometown heroes and learn about the important jobs these people do. They found firefighters, farmers and many others reminding us you do not need a cape to make a difference. So true. Bonus…the picture book also includes a seek-and-find activity for readers!",
+  "decorations": "🚒🍳",
   "theme": "sun",
-  "hero_focus": "bottom",
-  "hide_dates": false,
   "video": "https://github.com/oddkowens/Small-Cafe/releases/download/video-practice-2026-09-29-biscuits-and-gravy-by-shaun-c-tyson/2026-09-29-biscuits-and-gravy-by-shaun-c-tyson.mp4?v=1790709802",
-  "decorations": "🥚🧅🧯",
-  "video_notes": "Couldn't find the book cover automatically — upload one in \"Video: book cover\"."
+  "video_notes": "Couldn't find the book cover automatically — upload one in \"Video: book cover\".",
+  "hero_focus": "bottom",
+  "hide_dates": false
 }
