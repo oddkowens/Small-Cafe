@@ -9,7 +9,10 @@
   "audio_start": "00:00",
   "audio_end": "00:20",
   "video_summary": "Novels and Nibbles follows the wealthy Leong family from China to Hawaii, where the murder of their patriarch sets off generations of secrets, heartbreak, and loss. Told through the family’s women, the story centers on eighteen-year-old Theresa, whose pregnancy forces her to confront the family’s tangled past. Woven around the Chinese legend of the red string of fate, this novel explores love, sacrifice, and whether we can break free from the mistakes of those who came before us. Ooh. Intriguing! Legends, death, and secrets, this sounds like a good one!",
-  "theme": "auto",
+  "theme": "sun",
   "hero_focus": "bottom",
-  "hide_dates": false
+  "hide_dates": false,
+  "video": "https://github.com/oddkowens/Small-Cafe/releases/download/video-practice-2026-10-06-diamond-head-by-cecily-wong/2026-10-06-diamond-head-by-cecily-wong.mp4?v=1791315198",
+  "decorations": "🍜♦️🥑",
+  "video_notes": "All good."
 }
