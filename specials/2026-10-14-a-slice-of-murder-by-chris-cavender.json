@@ -5,13 +5,14 @@
   "price": "16.95",
   "photo": "/images/specials/7D1B0EFC-0D8E-4C37-A9D7-D6FD136076D5.webp",
   "description": "<p>A little mystery is on the table for Novels and Nibbles. A Slice of Murder takes us to a small North Carolina town, where pizzeria owner Elanor Swift makes a delivery and finds herself caught up in a murder investigation. With her spirited sister Maddy by her side, she sets out to clear her name, serving up small town secrets, sisterly banter, and plenty of pizza along the way.&nbsp;</p><p>So you guessed it… this week is artisanal pizza hand-crafted dough, house-made vibrant, zesty tomato sauce topped with your choice of melted cheese or&nbsp; cheese and savory pepperoni, finished with freshly picked basil straight from our garden.</p><p>This pizza is so yummy; everyone has a motive to try it!</p>",
+  "cover": "/_video/uploads/d1854e96597b50764a45cfc1d3fcdef536edaedcc637dc29f625b319f16cd17e.png",
   "audio_start": "00:30",
   "audio_end": "00:50",
   "video_summary": "A little mystery is on the table for Novels and Nibbles. A Slice of Murder takes us to a small North Carolina town, where pizzeria owner Elanor Swift makes a delivery and finds herself caught up in a murder investigation. With her spirited sister Maddy by her side, she sets out to clear her name, serving up small town secrets, sisterly banter, and plenty of pizza along the way.\n\nSo you guessed it… this week is artisanal pizza hand-crafted dough, house-made vibrant, zesty tomato sauce topped with your choice of melted cheese or&nbsp; cheese and savory pepperoni, finished with freshly picked basil straight from our garden.\n\nThis pizza is so yummy; everyone has a motive to try it!",
-  "theme": "question-marks",
-  "hero_focus": "center",
-  "hide_dates": false,
-  "video": "https://github.com/oddkowens/Small-Cafe/releases/download/video-practice-2026-10-14-a-slice-of-murder-by-chris-cavender/2026-10-14-a-slice-of-murder-by-chris-cavender.mp4?v=1791955164",
   "decorations": "🍕🧀🫕",
-  "video_notes": "All good."
+  "theme": "question-marks",
+  "video": "https://github.com/oddkowens/Small-Cafe/releases/download/video-practice-2026-10-14-a-slice-of-murder-by-chris-cavender/2026-10-14-a-slice-of-murder-by-chris-cavender.mp4?v=1791955164",
+  "video_notes": "All good.",
+  "hero_focus": "center",
+  "hide_dates": false
 }
