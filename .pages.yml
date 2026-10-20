@@ -31,10 +31,10 @@ content:
     filename: "{year}-{month}-{day}-{primary}.json"
     view:
       primary: title
-      fields: [title, start, price]
-      sort: [start, title]
+      fields: [title, added, price]
+      sort: [added, title]
       default:
-        sort: start
+        sort: added
         order: desc
     actions:
       - name: reset-practice
@@ -75,6 +75,12 @@ content:
             a minute; then reload the entry for the link.
           button: Make video
     fields:
+      # Filled in with the day the entry is created (Pages CMS pre-fills dates
+      # with today); only used to list the newest entries first.
+      - name: added
+        label: Added
+        type: date
+        hidden: true
       # ── Every week ──
       - name: title
         label: Book & author
@@ -83,13 +89,14 @@ content:
         required: true
       - name: start
         label: First day
-        description: Leave as today's date and it becomes this Wednesday (the café is closed Mon/Tue). The latest first day is the current special.
+        description: Leave empty for this week's Wednesday. Only fill it in if the special starts on a different day. The latest first day is the current special.
         type: date
-        required: true
+        default: ""
       - name: end
         label: Last day
-        description: Leave as is for the Sunday after the first day (set automatically when you save). Change it only if the special runs differently.
+        description: Leave empty for the Sunday after the first day. Only fill it in if the special runs differently.
         type: date
+        default: ""
       - name: price
         label: Price
         description: e.g. $16.95
@@ -110,17 +117,27 @@ content:
       - name: cover
         label: "Video: book cover"
         description: >
-          Leave empty and the video finds the cover itself (Google Books / Open Library).
-          Upload one only if it can't, or picks the wrong edition — 600+ pixels tall so it's sharp.
+          The book cover, shown first in the video — 600+ pixels tall so it's sharp.
+          Leave empty to skip the cover and start the video with the dish.
         type: image
         options:
           media: video
       - name: audio
-        label: "Video: audio"
-        description: The music or voiceover (mp3, m4a or wav) if the café sent a file. Leave empty for a silent video and add the song in the Facebook/Instagram app when posting.
+        label: "Video: audio file"
+        description: >
+          For short files only (about 3 MB / 3 minutes at most — bigger uploads fail).
+          For a longer song use "Audio link" below. Leave both empty for a silent video
+          and add the song in the Facebook/Instagram app when posting.
         type: file
         options:
           media: video
+      - name: audio_link
+        label: "Video: audio link"
+        description: >
+          For long songs: put the file in Google Drive or Dropbox, share it as
+          "Anyone with the link", and paste the link here. Any length works — set the
+          part you want with audio start/end. Used instead of the audio file when filled in.
+        type: string
       - name: audio_start
         label: "Video: audio start"
         description: Where in the audio to begin, e.g. 0:10. Leave empty to start at the beginning.

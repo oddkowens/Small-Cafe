@@ -5,7 +5,8 @@
 //   node render.mjs ../specials/….json --still 400 frame.png   # one frame, for checking layout
 //
 // Copies that week's photo / cover / audio / sticker into public/week/ (Remotion
-// serves files from public/), picks and downloads the decoration emoji (see
+// serves files from public/; an "audio link" is downloaded there instead),
+// picks and downloads the decoration emoji (see
 // decorations.mjs), works out the length from the audio, and renders a
 // 1080×1080 MP4 with the audio baked in.
 import { execFileSync } from "node:child_process";
@@ -13,7 +14,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { autoPick, autoTheme, download, fromTyped } from "./decorations.mjs";
-import { googleBooksCover, imageSize, openLibraryCover } from "./cover.mjs";
+import { imageSize } from "./cover.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.dirname(HERE);
@@ -102,33 +103,52 @@ for (const [i, e] of picks.entries()) {
 }
 const theme = !special.theme || special.theme === "auto" ? autoTheme(special) : special.theme;
 
-// Book cover: an upload 600+ pixels tall is used as is. Otherwise the largest
-// of the upload, Google Books' copy and Open Library's copy. Small covers still
-// work — they're scaled up — but look soft.
-let cover = stage("cover", "cover");
-let coverSize = cover ? imageSize(path.join(HERE, "public", cover)) : null;
-if (!coverSize || coverSize.h < 600) {
-  for (const [source, find, file] of [
-    ["Google Books", googleBooksCover, "cover-google.jpg"],
-    ["Open Library", openLibraryCover, "cover-openlibrary.jpg"],
-  ]) {
-    if (coverSize && coverSize.h >= 600) break;
-    const found = await find(special.title, path.join(WEEK, file));
-    if (found && (!coverSize || found.h > coverSize.h)) {
-      console.log(`using ${source}'s cover (${found.w}×${found.h})${cover ? ` instead of ${coverSize.w}×${coverSize.h}` : ""}`);
-      cover = `week/${file}`;
-      coverSize = found;
-    }
+// Book cover: exactly what was uploaded (no upload → the video skips the cover).
+const cover = stage("cover", "cover");
+const coverSize = cover ? imageSize(path.join(HERE, "public", cover)) : null;
+if (coverSize && coverSize.h < 500) warn(`The book cover is only ${coverSize.w}×${coverSize.h} pixels, so it will look blurry. Upload a bigger one (600+ pixels tall).`);
+
+// Audio: a Google Drive / Dropbox / direct link (no size limit — Pages CMS
+// uploads fail above ~3 MB) or else the uploaded file.
+const AUDIO_TYPES = { "audio/mpeg": ".mp3", "audio/mp3": ".mp3", "audio/mp4": ".m4a", "audio/x-m4a": ".m4a", "audio/aac": ".aac", "audio/wav": ".wav", "audio/x-wav": ".wav", "audio/wave": ".wav" };
+
+function directLink(link) {
+  const url = new URL(link.trim());
+  const driveId = url.pathname.match(/\/file\/d\/([\w-]+)/)?.[1] || url.searchParams.get("id");
+  if (/(^|\.)google\.com$/.test(url.hostname) && driveId) {
+    return `https://drive.usercontent.google.com/download?id=${driveId}&export=download&confirm=t`;
+  }
+  if (/(^|\.)dropbox\.com$/.test(url.hostname)) {
+    url.searchParams.delete("dl");
+    url.searchParams.set("raw", "1");
+  }
+  return url.toString();
+}
+
+async function fetchAudio(link) {
+  try {
+    const res = await fetch(directLink(link), { redirect: "follow" });
+    if (!res.ok) throw new Error(`the link answered ${res.status}`);
+    const type = (res.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+    const named = (res.headers.get("content-disposition") || "").match(/filename\*?=(?:UTF-8'')?"?([^";]+)/i)?.[1] || "";
+    const fromName = (n) => /\.(mp3|m4a|aac|wav)$/i.exec(decodeURIComponent(n))?.[0].toLowerCase();
+    const ext = AUDIO_TYPES[type] || fromName(named) || fromName(new URL(res.url).pathname) || "";
+    if (type.startsWith("text/html") || !ext) throw new Error("it opens a web page, not an audio file — share it as \"Anyone with the link\"");
+    fs.writeFileSync(path.join(WEEK, `audio${ext}`), Buffer.from(await res.arrayBuffer()));
+    return `week/audio${ext}`;
+  } catch (err) {
+    warn(`Couldn't use the audio link (${err.message}), so this video has no audio.`);
+    return null;
   }
 }
-if (!cover) warn("Couldn't find the book cover automatically — upload one in \"Video: book cover\".");
-if (coverSize && coverSize.h < 500) warn(`The book cover is only ${coverSize.w}×${coverSize.h} pixels, so it will look blurry. Upload a bigger one (600+ pixels tall).`);
+
+const audio = special.audio_link?.trim() ? await fetchAudio(special.audio_link) : stage("audio", "audio");
 
 const props = {
   summary: summaryText(),
   photo: stage("photo", "photo"),
   cover,
-  audio: stage("audio", "audio"),
+  audio,
   sticker: stage("sticker", "sticker"),
   emoji,
   theme,

@@ -14,13 +14,13 @@ Updates, between marker comments:
   menu.html            the special's text on the menu page
   index.html           the homepage hero background → current special's photo
 
-New photos (uploaded through Pages CMS into images/specials/) are shrunk to
-1500px WebP with a 750px copy for phones — when Pillow is installed (the
-GitHub Action installs it). Without Pillow the photo is used as uploaded.
+New photos (uploaded through Pages CMS into images/specials/) get a 1500px
+WebP + 750px phone copy under images/specials/web/ — when Pillow is installed
+(the GitHub Action installs it). The build never edits the specials' JSON.
 
 Python standard library only (plus optional Pillow).
 """
-import datetime, hashlib, html, json, os, re, struct, sys
+import datetime, hashlib, html, json, os, re, struct, sys, urllib.parse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SPECIALS = os.path.join(ROOT, "specials")
@@ -29,42 +29,41 @@ PHOTO_WIDTH, SMALL_WIDTH = 1500, 750
 
 
 # ── Loading ─────────────────────────────────────────────────────────────
+#
+# The build never writes back into a special's JSON file. Pages CMS refuses to
+# save an entry that changed since it was opened ("File has changed since you
+# last loaded it"), so anything the build filled in would trip up the next edit.
+# Dates and optimised photos are worked out fresh on every build instead.
 
-def default_start(special):
-    """Pages CMS fills a new entry's dates with today — usually Tuesday, when
-    the special arrives — but the café is closed Monday and Tuesday. A first
-    day on Mon/Tue whose last day is unset or no later (i.e. still the
-    pre-filled default) moves to that week's Wednesday. Dates entered on
-    purpose (a real Sunday last day) are left alone."""
-    start = datetime.date.fromisoformat(special["start"])
-    end = special.get("end")
-    if start.weekday() not in (0, 1) or (end and end > special["start"]) or special.get("hide_dates"):
-        return
-    special["start"] = (start + datetime.timedelta(days=2 - start.weekday())).isoformat()
-    special.pop("end", None)  # default_end sets the Sunday
-    save(special)
+def created_date(special):
+    """The day the entry was created: Pages CMS names files
+    {year}-{month}-{day}-{title}.json."""
+    m = re.match(r"(\d{4}-\d{2}-\d{2})", special["_slug"])
+    return datetime.date.fromisoformat(m.group(1)) if m else datetime.date.today()
 
 
-def default_end(special):
-    """No last day given (or one before the first day) → the Sunday on or after
-    the first day (the café's specials run Wednesday–Sunday). Saved back so
-    the editor shows it."""
-    if special.get("hide_dates"):
-        return
-    # Pages CMS pre-fills date fields with today's date, so an end before the
-    # start means "not really set" too.
-    if special.get("end") and special["end"] >= special["start"]:
-        return
-    start = datetime.date.fromisoformat(special["start"])
-    special["end"] = (start + datetime.timedelta(days=(6 - start.weekday()) % 7)).isoformat()
-    save(special)
+def resolve_dates(special):
+    """Sets _start/_end (ISO dates) for the pages; the file is left alone.
 
-
-def save(special):
-    data = {k: v for k, v in special.items() if not k.startswith("_")}
-    with open(special["_path"], "w") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-        f.write("\n")
+    - First day empty → the Wednesday of the week the entry was created
+      (specials arrive Tuesday for a Wednesday start).
+    - First day on a Monday/Tuesday (café closed — usually an old pre-filled
+      "today") with no real last day → that week's Wednesday.
+    - Last day empty, or not after the first day (pre-filled) → the Sunday on
+      or after the first day.
+    """
+    start = special.get("start") or ""
+    end = special.get("end") or ""
+    if not start:
+        base = created_date(special)
+        start = (base + datetime.timedelta(days=2 - base.weekday())).isoformat()
+    s = datetime.date.fromisoformat(start)
+    if s.weekday() in (0, 1) and not (end and end > start) and not special.get("hide_dates"):
+        s = s + datetime.timedelta(days=2 - s.weekday())
+        start, end = s.isoformat(), ""
+    if not special.get("hide_dates") and not (end and end > start):
+        end = (s + datetime.timedelta(days=(6 - s.weekday()) % 7)).isoformat()
+    special["_start"], special["_end"] = start, end
 
 
 def load_specials():
@@ -77,11 +76,13 @@ def load_specials():
             data = json.load(f)
         data["_path"] = path
         data["_slug"] = name[:-5]
-        if not data.get("start"):
-            sys.exit(f"{name}: 'start' date is required")
+        if not data.get("photo"):
+            print(f"skipping {name}: no photo yet", file=sys.stderr)
+            continue
+        resolve_dates(data)
         items.append(data)
     # Newest first; the filename breaks ties so the order never flickers.
-    return sorted(items, key=lambda s: (s["start"], s["_slug"]), reverse=True)
+    return sorted(items, key=lambda s: (s["_start"], s["_slug"]), reverse=True)
 
 
 # ── Photos ──────────────────────────────────────────────────────────────
@@ -96,37 +97,30 @@ def small_copy(photo):
     return f"{d}/750/{name}"
 
 
-def optimize_photo(special):
-    """Shrink a newly uploaded photo to WebP and make its phone-size copy."""
-    try:
-        from PIL import Image, ImageOps
-    except ImportError:
-        return
+def web_photo(special):
+    """The photo the pages use: the upload itself if it's already an optimised
+    WebP with a phone copy (older specials), otherwise a 1500px WebP + 750px
+    phone copy made next to it under web/ (the upload is left untouched)."""
     photo = rel(special.get("photo"))
-    src = os.path.join(ROOT, photo)
-    if not photo or not os.path.exists(src):
-        return
-    stem, ext = os.path.splitext(photo)
-    target = stem + ".webp"
-    with Image.open(src) as im:
-        im = ImageOps.exif_transpose(im)  # phone photos carry their rotation in EXIF
-        if im.mode not in ("RGB", "RGBA"):
-            im = im.convert("RGB")
-        if ext.lower() != ".webp" or im.width > PHOTO_WIDTH:
-            big = im.copy()
-            big.thumbnail((PHOTO_WIDTH, PHOTO_WIDTH * 4))
-            big.save(os.path.join(ROOT, target), "WEBP", quality=82)
-        small_path = os.path.join(ROOT, small_copy(target))
-        if not os.path.exists(small_path):
-            os.makedirs(os.path.dirname(small_path), exist_ok=True)
-            small = im.copy()
-            small.thumbnail((SMALL_WIDTH, SMALL_WIDTH * 4))
-            small.save(small_path, "WEBP", quality=80)
-    if target != photo:
-        os.remove(src)
-        # Keep the leading "/" Pages CMS uses, so its editor still finds the photo.
-        special["photo"] = ("/" if special["photo"].startswith("/") else "") + target
-        save(special)
+    if photo.endswith(".webp") and os.path.exists(os.path.join(ROOT, small_copy(photo))):
+        return photo
+    d, name = os.path.split(photo)
+    target = f"{d}/web/{os.path.splitext(name)[0]}.webp"
+    if not os.path.exists(os.path.join(ROOT, target)):
+        try:
+            from PIL import Image, ImageOps
+        except ImportError:
+            return photo  # used as uploaded until the GitHub build makes the copies
+        with Image.open(os.path.join(ROOT, photo)) as im:
+            im = ImageOps.exif_transpose(im)  # phone photos carry their rotation in EXIF
+            if im.mode not in ("RGB", "RGBA"):
+                im = im.convert("RGB")
+            for path, width, quality in ((target, PHOTO_WIDTH, 82), (small_copy(target), SMALL_WIDTH, 80)):
+                os.makedirs(os.path.dirname(os.path.join(ROOT, path)), exist_ok=True)
+                copy = im.copy()
+                copy.thumbnail((width, width * 4))
+                copy.save(os.path.join(ROOT, path), "WEBP", quality=quality)
+    return target
 
 
 def image_size(path):
@@ -159,12 +153,14 @@ def image_size(path):
 
 
 def photo_attrs(photo):
-    photo = rel(photo)
     w, h = image_size(os.path.join(ROOT, photo))
-    srcset = photo
+    # URL-encode: uploads keep their names, spaces included, and srcset is
+    # space-separated.
+    url = urllib.parse.quote(photo)
+    srcset = url
     if os.path.exists(os.path.join(ROOT, small_copy(photo))):
-        srcset = f"{small_copy(photo)} 750w, {photo} 1500w"
-    return {"src": photo, "srcset": srcset, "w": w, "h": h}
+        srcset = f"{urllib.parse.quote(small_copy(photo))} 750w, {url} 1500w"
+    return {"src": url, "srcset": srcset, "w": w, "h": h}
 
 
 # ── Text ────────────────────────────────────────────────────────────────
@@ -184,8 +180,8 @@ def text_html(special, align):
     out.append(desc.strip())
     if special.get("price"):
         out.append(f"<h4 {h}>{html.escape(special['price'].strip(), quote=False)}</h4>")
-    if special.get("start") and special.get("end") and not special.get("hide_dates"):
-        out.append(f"<h4 {h}>{fmt_date(special['start'])} - {fmt_date(special['end'])}</h4>")
+    if special.get("_end") and not special.get("hide_dates"):
+        out.append(f"<h4 {h}>{fmt_date(special['_start'])} - {fmt_date(special['_end'])}</h4>")
     return "".join(out)
 
 
@@ -204,7 +200,7 @@ def ids_for(slug):
 
 
 def special_section(special, template):
-    p = photo_attrs(special["photo"])
+    p = photo_attrs(special["_photo"])
     values = dict(ids_for(special["_slug"]),
                   text_html=text_html(special, "left"),
                   photo_src=p["src"], photo_srcset=p["srcset"],
@@ -249,10 +245,7 @@ def main():
     if not specials:
         sys.exit("no specials in specials/")
     for s in specials:
-        default_start(s)
-        default_end(s)
-        optimize_photo(s)
-    specials.sort(key=lambda s: (s["start"], s["_slug"]), reverse=True)  # starts may have moved
+        s["_photo"] = web_photo(s)
     current, previous = specials[0], specials[1:]
 
     with open(TEMPLATE) as f:
@@ -268,9 +261,9 @@ def main():
     m = re.search(r"<!-- specials:hero -->(.*?)<!-- /specials:hero -->", s, re.S)
     if not m:
         sys.exit("index.html: missing <!-- specials:hero --> markers")
-    changed.append(replace_between("index.html", "hero", hero_img(m.group(1), photo_attrs(current["photo"]), current.get("hero_focus"))))
+    changed.append(replace_between("index.html", "hero", hero_img(m.group(1), photo_attrs(current["_photo"]), current.get("hero_focus"))))
 
-    print(f"current: {current['title']} ({current['start']}); {len(previous)} previous"
+    print(f"current: {current['title']} ({current['_start']} – {current['_end']}); {len(previous)} previous"
           + ("" if any(changed) else "; pages already up to date"))
 
 

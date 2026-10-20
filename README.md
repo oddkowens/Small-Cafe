@@ -27,13 +27,20 @@ then runs `_build/build_specials.py`, which:
   and lists every older one under "Previous Special";
 - puts the current special's text on `menu.html`;
 - makes its photo the homepage (`index.html`) hero background;
-- shrinks the uploaded photo to WebP (1500px + a 750px phone copy).
+- makes a 1500px WebP + 750px phone copy of the uploaded photo under
+  `images/specials/web/` (the upload itself is left as is).
 
-A first day on Monday/Tuesday (Pages CMS pre-fills today; the café is closed
-then) moves to that week's Wednesday unless a later last day was set. An empty
-(or pre-filled) "Last day" becomes the Sunday on or after the first day (written
-back into the entry); "Hide the date line" leaves the dates off (used for the
-four oldest specials, which never had them).
+Both date fields start empty. An empty first day means the Wednesday of the
+week the entry was created (from its filename); a first day on Monday/Tuesday
+(café closed) with no later last day also becomes that Wednesday. An empty last
+day means the following Sunday. "Hide the date line" leaves the dates off (the
+four oldest specials, which never had them). A hidden "Added" date (pre-filled
+by Pages CMS on creation) only orders the list in the editor.
+
+**The automation never edits a special's JSON except to add the video link /
+picks / notes after a render** — Pages CMS refuses to save an entry that
+changed since it was opened, so dates and photo copies are worked out on every
+build instead of being written back.
 
 It commits the updated pages and Cloudflare deploys them — about two minutes
 after saving. The special with the latest first day is always the current one.
@@ -46,14 +53,16 @@ is as long as that section), decoration emoji, decoration style and an optional
 sticker. Decoration pictures are Microsoft's Fluent Emoji 3D (MIT licence):
 left empty, `_video/decorations.mjs` picks ones matching the title and
 description (from `_video/emoji-index.json`) and writes them back into the entry. Saving the newest special
-(or any special with a cover/audio) makes its video automatically
+(or any special with a cover/audio/audio link) makes its video automatically
 (`.github/workflows/auto-video.yml`); **Make video** (top of the entry) re-makes
-one. With no cover uploaded (or a small one) the render finds one on Google
-Books, then Open Library (`_video/cover.mjs`); a `GOOGLE_BOOKS_API_KEY` repo
-secret switches Google to its official API. The **Render special video** Action
+one. The cover is exactly what's uploaded (no cover → the clip starts on the
+dish). Audio can be uploaded (Pages CMS uploads fail above ~3 MB, its host's
+request limit) or given as an **audio link** — a Google Drive / Dropbox share
+link or any direct link, downloaded at render time with no size limit; a link
+that doesn't work gives a silent video and a note in the entry. The **Render special video** Action
 (`.github/workflows/render-video.yml`) renders a 1080×1080 MP4 with
-`_video/render.mjs` (Remotion), attaches it to a GitHub release and writes the
-download link into the entry's **Video** field (~3 minutes; reload the entry).
+`_video/render.mjs` (Remotion), attaches it to a GitHub release (same link on re-renders) and writes the
+download link into the entry's **Video** field (~1 minute; reload the entry).
 
 The template is `_video/src/` — `SpecialClip.tsx` (scenes and timing: cover,
 dish, page curl at the halfway point, open book), `PageFlip.tsx`, and

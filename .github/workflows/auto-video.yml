@@ -1,6 +1,6 @@
 # Makes the weekly video automatically when a special is saved in Pages CMS:
 # for the newest special (the current one), or any special with video fields
-# (cover / audio / sticker) filled in. Fixing a typo in an old special doesn't
+# (cover / audio / audio link / sticker) filled in. Fixing a typo in an old special doesn't
 # render anything. Hands each one to "Render special video".
 #
 # Commits made by the Actions themselves (page builds, video links) don't
@@ -31,13 +31,16 @@ jobs:
           BEFORE: ${{ github.event.before }}
         run: |
           if [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then BEFORE=$(git rev-parse HEAD~1); fi
+          # Same "newest" as the site build uses (empty first day = that week's Wednesday).
           newest=$(python3 -c '
-          import json, glob
-          items = [(json.load(open(f))["start"], f) for f in glob.glob("specials/*.json")]
-          print(max(items)[1] if items else "")
+          import os, sys
+          sys.path.insert(0, "_build")
+          import build_specials as b
+          s = b.load_specials()
+          print(os.path.relpath(s[0]["_path"]) if s else "")
           ')
           git diff --name-only --diff-filter=AM "$BEFORE" HEAD -- 'specials/*.json' | while read -r f; do
-            wants=$(jq -r 'if (.cover // .audio // .sticker // "") != "" then "yes" else "no" end' "$f")
+            wants=$(jq -r 'if (.cover // .audio // .audio_link // .sticker // "") != "" then "yes" else "no" end' "$f")
             if [ "$f" = "$newest" ] || [ "$wants" = "yes" ]; then
               echo "rendering $f"
               gh workflow run render-video.yml --ref "$GITHUB_REF_NAME" -f special="$f"

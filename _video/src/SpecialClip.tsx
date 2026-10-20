@@ -126,13 +126,16 @@ const Sticker: React.FC<{ src: string; frame: number; start: number; x: number; 
   );
 };
 
-// Small copies of the decoration pictures drifting around the edges.
+// Small copies of the decoration pictures drifting along the left and right
+// edges — outside the cover (700 wide) and dish photo (820 wide) boxes, which
+// leave a ~130px strip each side, so they never end up behind either.
 const SPOTS: [number, number][] = [
-  [70, 430],
-  [955, 110],
-  [950, 560],
-  [60, 930],
-  [520, 960],
+  [62, 170],
+  [1018, 300],
+  [62, 560],
+  [1018, 700],
+  [62, 940],
+  [1018, 1000],
 ];
 const Floaters: React.FC<{ emoji: string[]; frame: number }> = ({ emoji, frame }) => {
   const { fps } = useVideoConfig();
@@ -185,7 +188,6 @@ const FrontScenes: React.FC<ClipProps & { frame: number; t: ReturnType<typeof ti
       <AbsoluteFill style={{ opacity: bgIn }}>
         <ThemeLayer theme={theme} />
       </AbsoluteFill>
-      <Floaters emoji={emoji} frame={frame} />
 
       {cover && frame < t.dishStart + 6 && (
         <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: coverOut }}>
@@ -221,6 +223,8 @@ const FrontScenes: React.FC<ClipProps & { frame: number; t: ReturnType<typeof ti
           {dishSticker && <Sticker src={dishSticker} frame={frame} start={t.dishStart} x={40} y={40} />}
         </AbsoluteFill>
       )}
+      {/* Last, so they sit on top of the cover and dish rather than behind. */}
+      <Floaters emoji={emoji} frame={frame} />
     </AbsoluteFill>
   );
 };
