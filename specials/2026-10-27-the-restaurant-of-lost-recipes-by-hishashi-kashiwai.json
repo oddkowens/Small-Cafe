@@ -6,15 +6,16 @@
   "price": "$15.95",
   "photo": "/images/specials/IMG_20261027_181203.jpg",
   "description": "<p>Novels and Nibbles takes us back to Kyoto with the second book in Kashiwai’s series. After enjoying the first book last week, we’re continuing this delicious journey with a search for ramen. Katsuji Onodera wants to taste the ramen he remembered eating as a student. He hopes this particular taste will help him reconnect with his artistic past. His story is another reminder that a bowl of soup can hold more than broth and noodles; it can carry memories of people, places, and moments we long to revisit.</p><p>We have decided to give a little extra love to our vegetarian guests and anyone else out there by conjuring up a comforting bowl of noodles! House-made Vegetarian Ramen with rich flavorful broth that brings together savory mushrooms, ginger, soy sauce, sesame oil, and a warming kick (but not overwhelming, just gently warming) of Sriracha and crushed red pepper. This generous ramen bowl is filled with tender noodles and topped with fresh green onions, and a boiled egg.</p><p>Stop by and let us serve you a little love and comfort, one spoonful at a time!</p>",
+  "cover": "/_video/uploads/image_2026-10-27_183851918.png",
   "audio_link": "https://drive.google.com/file/d/127WoJHoEtkltH2vJTaA84DrPZbiBtDPD/view?usp=sharing",
   "audio_start": "1:00",
   "audio_end": "1:29",
   "video_summary": "After enjoying the first book last week, we’re continuing this delicious journey with a search for ramen. Katsuji Onodera wants to taste the ramen he remembered eating as a student. He hopes this particular taste will help him reconnect with his artistic past. His story is another reminder that a bowl of soup can hold more than broth and noodles; it can carry memories of people, places, and moments we long to revisit.",
-  "decorations": "ramen",
+  "decorations": "none",
   "theme": "sparkles",
+  "video": "https://github.com/oddkowens/Small-Cafe/releases/download/video-2026-10-27-the-restaurant-of-lost-recipes-by-hishashi-kashiwai/2026-10-27-the-restaurant-of-lost-recipes-by-hishashi-kashiwai.mp4",
+  "video_notes": "No picture for r a m e n in the decorations, so it was skipped.",
   "sticker": "/_video/uploads/Copy of A Slice of Murder by Chris Cavender (1)-1.png",
   "hero_focus": "bottom",
-  "hide_dates": false,
-  "video": "https://github.com/oddkowens/Small-Cafe/releases/download/video-2026-10-27-the-restaurant-of-lost-recipes-by-hishashi-kashiwai/2026-10-27-the-restaurant-of-lost-recipes-by-hishashi-kashiwai.mp4",
-  "video_notes": "No picture for r a m e n in the decorations, so it was skipped."
+  "hide_dates": false
 }
