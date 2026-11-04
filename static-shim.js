@@ -69,6 +69,21 @@
     });
   });
 
+  // ── Image blocks with text beside the picture ("card" and similar) ──
+  // Squarespace's JS marks a narrow block with .sqs-narrow-width, which its CSS
+  // uses to put the text under the picture. Without it, phones got the desktop
+  // side-by-side layout and a thin column of text.
+  var imageBlocks = document.querySelectorAll('figure.image-block-outer-wrapper');
+  function markNarrow() {
+    imageBlocks.forEach(function (f) {
+      f.classList.toggle('sqs-narrow-width', f.getBoundingClientRect().width < 600);
+    });
+  }
+  if (imageBlocks.length) {
+    markNarrow();
+    window.addEventListener('resize', markNarrow);
+  }
+
   // ── Lightbox ── galleries that had Squarespace's lightbox turned on.
   document.querySelectorAll('.gallery-reel, .gallery-masonry, .gallery-grid').forEach(function (g) {
     var p = props(g, 'data-props');
