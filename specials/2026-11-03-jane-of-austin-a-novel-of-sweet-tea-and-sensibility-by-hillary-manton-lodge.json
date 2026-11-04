@@ -12,7 +12,9 @@
   "audio_end": "0:59",
   "video_summary": "Novels and Nibbles follows three sisters as they leave their San Francisco tea shop and start over in Austin, Texas. Jane falls for a charming musician, who just might not be the right person for her. Alongside the romance, the sisters navigate family tensions, heartbreak, and rebuilding their lives all with a side of breakfast tacos.",
   "decorations": "🌮🥑",
-  "theme": "auto",
+  "theme": "sparkles",
   "hero_focus": "bottom",
-  "hide_dates": false
+  "hide_dates": false,
+  "video": "https://github.com/oddkowens/Small-Cafe/releases/download/video-2026-11-03-jane-of-austin-a-novel-of-sweet-tea-and-sensibility-by-hillary-manton-lodge/2026-11-03-jane-of-austin-a-novel-of-sweet-tea-and-sensibility-by-hillary-manton-lodge.mp4",
+  "video_notes": "The book cover is only 300×450 pixels, so it will look blurry. Upload a bigger one (600+ pixels tall)."
 }
