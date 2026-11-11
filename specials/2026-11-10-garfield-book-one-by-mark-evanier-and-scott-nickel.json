@@ -5,14 +5,14 @@
   "end": "2026-11-15",
   "price": "$16.95",
   "photo": "/images/specials/image_2026-11-10_190132147.png",
-  "description": "<p><strong><u>Garfield Book One by Mark Evanier and Scott Nickel</u></strong></p><p>Novels and Nibbles follows the lasagna-loving cat, his owner Jon, and his ever-cheerful sidekick Odie through a collection of funny adventures. Along the way, Garfield meets a mouse who wants to be a cat, encounters a mummy, and ventures to Planet Dorkon, home of the superhero team Pet Force. Each story puts Garfield in a new predicament, and he brings his usual sarcasm and appetite to everyone. This is a fun one for the young and the young at heart.</p><p>I’ll bet you can guess what the special this week is …LASAGNE! Not any old lasagna, but a fabulous Butternut Squash and Spinach Lasagne! Sound Yummy? It definitely is! Roasted butternut squash, sautéed spinach, creamy ricotta, Parmesan and fall spices layered between lasagna noodles and topped with toasty mozzarella, more Parmesan and crispy sage leaves garnish and served with garlic bread.&nbsp;</p><p>Roasted butternut squash, spinach and Italian cheeses…come hungry and wear stretchy pants because you’ll want more!</p><p>$16.95<br>11/11/2026 - 11/15/2026</p>",
+  "description": "<p>Novels and Nibbles follows the lasagna-loving cat, his owner Jon, and his ever-cheerful sidekick Odie through a collection of funny adventures. Along the way, Garfield meets a mouse who wants to be a cat, encounters a mummy, and ventures to Planet Dorkon, home of the superhero team Pet Force. Each story puts Garfield in a new predicament, and he brings his usual sarcasm and appetite to everyone. This is a fun one for the young and the young at heart.</p><p>I’ll bet you can guess what the special this week is …LASAGNE! Not any old lasagna, but a fabulous Butternut Squash and Spinach Lasagne! Sound Yummy? It definitely is! Roasted butternut squash, sautéed spinach, creamy ricotta, Parmesan and fall spices layered between lasagna noodles and topped with toasty mozzarella, more Parmesan and crispy sage leaves garnish and served with garlic bread.&nbsp;</p><p>Roasted butternut squash, spinach and Italian cheeses…come hungry and wear stretchy pants because you’ll want more!</p>",
   "cover": "/_video/uploads/image_2026-11-10_190235578.png",
   "audio_link": "https://drive.google.com/file/d/1aAoI-ZSHaHrlFoamfYHEB62eby21iTyv/view?usp=sharing",
   "video_summary": "The lasagna-loving cat, his owner Jon, and his ever-cheerful sidekick Odie through a collection of funny adventures. Along the way, Garfield meets a mouse who wants to be a cat, encounters a mummy, and ventures to Planet Dorkon, home of the superhero team Pet Force. Each story puts Garfield in a new predicament, and he brings his usual sarcasm and appetite to everyone. This is a fun one for the young and the young at heart.",
   "decorations": "🧀🐈",
   "theme": "sparkles",
-  "hero_focus": "bottom",
-  "hide_dates": false,
   "video": "https://github.com/oddkowens/Small-Cafe/releases/download/video-2026-11-10-garfield-book-one-by-mark-evanier-and-scott-nickel/2026-11-10-garfield-book-one-by-mark-evanier-and-scott-nickel.mp4",
-  "video_notes": "The book cover is only 309×450 pixels, so it will look blurry. Upload a bigger one (600+ pixels tall)."
+  "video_notes": "The book cover is only 309×450 pixels, so it will look blurry. Upload a bigger one (600+ pixels tall).",
+  "hero_focus": "bottom",
+  "hide_dates": false
 }
